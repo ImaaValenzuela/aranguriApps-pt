@@ -2,10 +2,10 @@ package com.mitimiti.app.data.datasource
 
 import com.mitimiti.app.data.model.TableDto
 import dev.gitlive.firebase.Firebase
-import dev.gitlive.firebase.database.*
+import dev.gitlive.firebase.database.database
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 
 class FirebaseRemoteDataSource {
     private val database = Firebase.database
