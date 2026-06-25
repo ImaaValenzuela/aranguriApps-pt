@@ -1,0 +1,65 @@
+# Gradle
+.gradle/
+build/
+**/build/
+!src/**/build/
+gradle-app.setting
+!gradle-wrapper.jar
+.gradle-cache/
+
+# Android Studio / IntelliJ IDEA
+.idea/
+*.iml
+*.ipr
+*.iws
+.navigation/
+captures/
+local.properties
+.externalNativeBuild/
+.cxx/
+output.json
+
+# Xcode / iOS
+.DS_Store
+*.xcodeproj/*
+!*.xcodeproj/project.pbxproj
+!*.xcodeproj/xcshareddata/
+!*.xcodeproj/project.xcworkspace/
+!*.xcworkspace/contents.xcworkspacedata
+**/xcshareddata/WorkspaceSettings.xcsettings
+xcuserdata/
+DerivedData/
+*.xcuserstate
+*.xcscheme
+Pods/
+
+# Kotlin / Native
+.kotlin/
+*.kexe
+*.knm
+*.klib
+.konan/
+
+# Build Artifacts & Packages
+*.apk
+*.ap_
+*.aab
+*.ipa
+*.dex
+*.dSYM
+*.dSYM.zip
+
+# Secrets & Local Configs (Crucial for security)
+*.keystore
+*.jks
+.env
+.env.*
+*.gpg
+
+# Node.js (in case of JS/TS scripts or web modules)
+node_modules/
+
+# Other IDEs & Text Editors
+.vscode/
+*.swp
+*~
