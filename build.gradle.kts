@@ -46,3 +46,30 @@ dependencies {
     kover(project(":shared"))
     kover(project(":androidApp"))
 }
+
+evaluationDependsOn(":shared")
+evaluationDependsOn(":androidApp")
+
+tasks.register("prCheck") {
+    group = "verification"
+    description = "Ejecuta verificaciones locales de PR (formateo, tests, cobertura y lint)."
+
+    dependsOn("ktlintFormat")
+    dependsOn(":shared:allTests")
+    dependsOn(":androidApp:test")
+    dependsOn(":koverXmlReport")
+    dependsOn(":androidApp:lint")
+}
+
+// Configurar el orden de ejecución
+val ktlintFormatTask = tasks.named("ktlintFormat")
+val sharedTestTask = project(":shared").tasks.named("allTests")
+val androidAppTestTask = project(":androidApp").tasks.named("test")
+val lintTask = project(":androidApp").tasks.named("lint")
+val koverTask = tasks.named("koverXmlReport")
+
+sharedTestTask.configure { mustRunAfter(ktlintFormatTask) }
+androidAppTestTask.configure { mustRunAfter(ktlintFormatTask) }
+lintTask.configure { mustRunAfter(ktlintFormatTask) }
+koverTask.configure { mustRunAfter(sharedTestTask) }
+koverTask.configure { mustRunAfter(androidAppTestTask) }
