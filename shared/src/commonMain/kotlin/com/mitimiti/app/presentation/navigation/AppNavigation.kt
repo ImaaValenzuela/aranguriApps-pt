@@ -1,19 +1,20 @@
 package com.mitimiti.app.presentation.navigation
 
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.animation.togetherWith
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavType
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.mitimiti.app.data.datasource.FirebaseRemoteDataSource
 import com.mitimiti.app.data.repository.FirebaseAuthRepository
 import com.mitimiti.app.data.repository.FirebaseRealtimeSyncRepository
@@ -29,20 +30,6 @@ import com.mitimiti.app.presentation.consumo.ExpenseViewModel
 import com.mitimiti.app.presentation.mesa.TableScreen
 import com.mitimiti.app.presentation.mesa.TableViewModel
 
-sealed interface Screen {
-    data object TableInput : Screen
-
-    data class ExpenseInput(val tableId: String) : Screen
-
-    data class SummaryView(val tableId: String) : Screen
-}
-
-private sealed interface AuthScreen {
-    data object Login : AuthScreen
-
-    data object Register : AuthScreen
-}
-
 @Composable
 @Suppress("FunctionNaming")
 fun AppNavigation(
@@ -51,9 +38,20 @@ fun AppNavigation(
     onGoogleTokenConsumed: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
+    val navController = rememberNavController()
+
     val authRepository = remember { FirebaseAuthRepository() }
     val authViewModel = remember { AuthViewModel(authRepository) }
     val authState by authViewModel.uiState.collectAsState()
+
+    val firebaseRemoteDataSource = remember { FirebaseRemoteDataSource() }
+    val tableRepository = remember { FirebaseTableRepository(firebaseRemoteDataSource) }
+    val syncRepository = remember { FirebaseRealtimeSyncRepository() }
+    val calculateSplitExpensesUseCase = remember { CalculateSplitExpensesUseCase() }
+
+    val tableViewModel = remember { TableViewModel(tableRepository, syncRepository) }
+    val expenseViewModel = remember { ExpenseViewModel(tableRepository) }
+    val summaryViewModel = remember { SummaryViewModel(tableRepository, calculateSplitExpensesUseCase) }
 
     LaunchedEffect(googleIdToken) {
         if (googleIdToken != null) {
@@ -62,110 +60,99 @@ fun AppNavigation(
         }
     }
 
-    if (!authState.isAuthenticated) {
-        var currentAuthScreen by remember { mutableStateOf<AuthScreen>(AuthScreen.Login) }
-
-        AnimatedContent(
-            targetState = currentAuthScreen,
-            transitionSpec = {
-                if (targetState == AuthScreen.Register) {
-                    slideInHorizontally { width -> width } + fadeIn() togetherWith
-                        slideOutHorizontally { width -> -width } + fadeOut()
-                } else {
-                    slideInHorizontally { width -> -width } + fadeIn() togetherWith
-                        slideOutHorizontally { width -> width } + fadeOut()
-                }
-            },
-        ) { authScreen ->
-            when (authScreen) {
-                AuthScreen.Login -> {
-                    LoginScreen(
-                        viewModel = authViewModel,
-                        onGoogleSignInClick = onGoogleSignInClick,
-                        onNavigateToRegister = { currentAuthScreen = AuthScreen.Register },
-                        modifier = modifier,
-                    )
-                }
-                AuthScreen.Register -> {
-                    RegisterScreen(
-                        viewModel = authViewModel,
-                        onNavigateToLogin = { currentAuthScreen = AuthScreen.Login },
-                        modifier = modifier,
-                    )
-                }
+    // Monitor authentication state and adjust navigation
+    LaunchedEffect(authState.isAuthenticated) {
+        if (authState.isAuthenticated) {
+            navController.navigate("table") {
+                popUpTo(0) { inclusive = true }
+            }
+        } else {
+            navController.navigate("login") {
+                popUpTo(0) { inclusive = true }
             }
         }
-    } else {
-        var currentScreen by remember { mutableStateOf<Screen>(Screen.TableInput) }
+    }
 
-        val firebaseRemoteDataSource = remember { FirebaseRemoteDataSource() }
-        val tableRepository = remember { FirebaseTableRepository(firebaseRemoteDataSource) }
-        val syncRepository = remember { FirebaseRealtimeSyncRepository() }
-        val calculateSplitExpensesUseCase = remember { CalculateSplitExpensesUseCase() }
+    val startDestination =
+        remember {
+            if (authState.isAuthenticated) "table" else "login"
+        }
 
-        val tableViewModel = remember { TableViewModel(tableRepository, syncRepository) }
-        val expenseViewModel = remember { ExpenseViewModel(tableRepository) }
-        val summaryViewModel = remember { SummaryViewModel(tableRepository, calculateSplitExpensesUseCase) }
-
-        AnimatedContent(
-            targetState = currentScreen,
-            transitionSpec = {
-                val from = initialState
-                val to = targetState
-                val isForward =
-                    when {
-                        from is Screen.TableInput && to is Screen.ExpenseInput -> true
-                        from is Screen.TableInput && to is Screen.SummaryView -> true
-                        from is Screen.ExpenseInput && to is Screen.SummaryView -> true
-                        else -> false
+    NavHost(
+        navController = navController,
+        startDestination = startDestination,
+        modifier = modifier,
+        enterTransition = { slideInHorizontally { width -> width } + fadeIn() },
+        exitTransition = { slideOutHorizontally { width -> -width } + fadeOut() },
+        popEnterTransition = { slideInHorizontally { width -> -width } + fadeIn() },
+        popExitTransition = { slideOutHorizontally { width -> width } + fadeOut() },
+    ) {
+        composable("login") {
+            LoginScreen(
+                viewModel = authViewModel,
+                onGoogleSignInClick = onGoogleSignInClick,
+                onNavigateToRegister = {
+                    navController.navigate("register")
+                },
+                modifier = Modifier,
+            )
+        }
+        composable("register") {
+            RegisterScreen(
+                viewModel = authViewModel,
+                onNavigateToLogin = {
+                    navController.navigate("login") {
+                        popUpTo("login") { inclusive = true }
                     }
-                if (isForward) {
-                    slideInHorizontally { width -> width } + fadeIn() togetherWith
-                        slideOutHorizontally { width -> -width } + fadeOut()
-                } else {
-                    slideInHorizontally { width -> -width } + fadeIn() togetherWith
-                        slideOutHorizontally { width -> width } + fadeOut()
-                }
-            },
-        ) { screen ->
-            when (screen) {
-                is Screen.TableInput -> {
-                    TableScreen(
-                        viewModel = tableViewModel,
-                        onNavigateToExpenses = { tableId ->
-                            currentScreen = Screen.ExpenseInput(tableId)
-                        },
-                        onSignOut = { authViewModel.signOut() },
-                        modifier = modifier,
-                    )
-                }
-                is Screen.ExpenseInput -> {
-                    ExpenseScreen(
-                        tableId = screen.tableId,
-                        viewModel = expenseViewModel,
-                        onNavigateToSummary = { tableId ->
-                            currentScreen = Screen.SummaryView(tableId)
-                        },
-                        onBack = {
-                            currentScreen = Screen.TableInput
-                        },
-                        modifier = modifier,
-                    )
-                }
-                is Screen.SummaryView -> {
-                    SummaryScreen(
-                        tableId = screen.tableId,
-                        viewModel = summaryViewModel,
-                        onRestart = {
-                            currentScreen = Screen.TableInput
-                        },
-                        onBack = {
-                            currentScreen = Screen.ExpenseInput(screen.tableId)
-                        },
-                        modifier = modifier,
-                    )
-                }
-            }
+                },
+                modifier = Modifier,
+            )
+        }
+        composable("table") {
+            TableScreen(
+                viewModel = tableViewModel,
+                onNavigateToExpenses = { tableId ->
+                    navController.navigate("expense/$tableId")
+                },
+                onSignOut = { authViewModel.signOut() },
+                modifier = Modifier,
+            )
+        }
+        composable(
+            route = "expense/{tableId}",
+            arguments = listOf(navArgument("tableId") { type = NavType.StringType }),
+        ) { backStackEntry ->
+            val tableId = backStackEntry.arguments?.getString("tableId") ?: ""
+            ExpenseScreen(
+                tableId = tableId,
+                viewModel = expenseViewModel,
+                onNavigateToSummary = { id ->
+                    navController.navigate("summary/$id")
+                },
+                onBack = {
+                    navController.popBackStack()
+                },
+                modifier = Modifier,
+            )
+        }
+        composable(
+            route = "summary/{tableId}",
+            arguments = listOf(navArgument("tableId") { type = NavType.StringType }),
+        ) { backStackEntry ->
+            val tableId = backStackEntry.arguments?.getString("tableId") ?: ""
+            SummaryScreen(
+                tableId = tableId,
+                viewModel = summaryViewModel,
+                onRestart = {
+                    navController.navigate("table") {
+                        popUpTo("table") { inclusive = true }
+                    }
+                },
+                onBack = {
+                    navController.popBackStack()
+                },
+                modifier = Modifier,
+            )
         }
     }
 }
