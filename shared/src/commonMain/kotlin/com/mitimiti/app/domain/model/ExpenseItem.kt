@@ -5,4 +5,5 @@ data class ExpenseItem(
     val name: String,
     val cost: Double,
     val sharedByFriendIds: List<String>,
+    val paidByFriendId: String,
 )

@@ -4,8 +4,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mitimiti.app.domain.model.ExpenseItem
 import com.mitimiti.app.domain.model.Friend
+import com.mitimiti.app.domain.model.TableType
 import com.mitimiti.app.domain.repository.TableRepository
 import com.mitimiti.app.presentation.mesa.ClockUtils
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -14,10 +16,13 @@ import kotlinx.coroutines.launch
 
 data class ExpenseUiState(
     val tableId: String = "",
+    val tableName: String = "",
+    val type: TableType = TableType.RESTAURANT,
     val friends: List<Friend> = emptyList(),
     val expenses: List<ExpenseItem> = emptyList(),
     val tipPercentage: Double = 10.0,
     val fixedExtraCost: Double = 0.0,
+    val cubiertoPerPerson: Double = 0.0,
     val isLoading: Boolean = false,
     val error: String? = null,
 )
@@ -28,34 +33,47 @@ class ExpenseViewModel(
     private val _uiState = MutableStateFlow(ExpenseUiState())
     val uiState: StateFlow<ExpenseUiState> = _uiState.asStateFlow()
 
+    private var observeJob: Job? = null
+
     fun loadTable(tableId: String) {
-        viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true) }
-            val table = tableRepository.getTable(tableId)
-            if (table != null) {
-                _uiState.update {
-                    it.copy(
-                        tableId = tableId,
-                        friends = table.friends,
-                        expenses = table.expenses,
-                        tipPercentage = table.tipPercentage,
-                        fixedExtraCost = table.fixedExtraCost,
-                        isLoading = false,
-                    )
+        observeJob?.cancel()
+        observeJob =
+            viewModelScope.launch {
+                _uiState.update { it.copy(isLoading = true) }
+                val initialTable = tableRepository.getTable(tableId)
+                if (initialTable == null) {
+                    _uiState.update { it.copy(error = "Mesa no encontrada", isLoading = false) }
+                    return@launch
                 }
-            } else {
-                _uiState.update { it.copy(error = "Mesa no encontrada", isLoading = false) }
+
+                tableRepository.observeTable(tableId).collect { table ->
+                    if (table != null) {
+                        _uiState.update {
+                            it.copy(
+                                tableId = tableId,
+                                tableName = table.name,
+                                type = table.type,
+                                friends = table.friends,
+                                expenses = table.expenses,
+                                tipPercentage = table.tipPercentage,
+                                fixedExtraCost = table.fixedExtraCost,
+                                cubiertoPerPerson = table.cubiertoPerPerson,
+                                isLoading = false,
+                            )
+                        }
+                    }
+                }
             }
-        }
     }
 
     fun addExpenseItem(
         name: String,
         cost: Double,
         sharedByFriendIds: List<String>,
+        paidByFriendId: String,
     ) {
         val tableId = _uiState.value.tableId
-        if (tableId.isEmpty() || name.trim().isEmpty() || cost <= 0) return
+        if (tableId.isEmpty() || name.trim().isEmpty() || cost <= 0 || paidByFriendId.isEmpty()) return
 
         viewModelScope.launch {
             val newItem =
@@ -64,6 +82,7 @@ class ExpenseViewModel(
                     name = name,
                     cost = cost,
                     sharedByFriendIds = sharedByFriendIds,
+                    paidByFriendId = paidByFriendId,
                 )
             val updatedExpenses = _uiState.value.expenses + newItem
 
@@ -100,5 +119,10 @@ class ExpenseViewModel(
                 ),
             )
         }
+    }
+
+    override fun onCleared() {
+        observeJob?.cancel()
+        super.onCleared()
     }
 }
