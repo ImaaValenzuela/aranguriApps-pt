@@ -9,6 +9,7 @@ data class ExpenseDto(
     val name: String = "",
     val cost: Double = 0.0,
     val sharedByFriendIds: List<String> = emptyList(),
+    val paidByFriendId: String = "",
 ) {
     fun toDomain(): ExpenseItem {
         return ExpenseItem(
@@ -16,6 +17,7 @@ data class ExpenseDto(
             name = name,
             cost = cost,
             sharedByFriendIds = sharedByFriendIds,
+            paidByFriendId = paidByFriendId,
         )
     }
 
@@ -26,6 +28,7 @@ data class ExpenseDto(
                 name = expense.name,
                 cost = expense.cost,
                 sharedByFriendIds = expense.sharedByFriendIds,
+                paidByFriendId = expense.paidByFriendId,
             )
         }
     }
