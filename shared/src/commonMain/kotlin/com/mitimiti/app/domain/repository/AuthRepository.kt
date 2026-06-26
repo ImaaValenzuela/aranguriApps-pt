@@ -8,9 +8,15 @@ interface AuthRepository {
     val currentUser: User?
     val isAuthenticated: Boolean
 
-    suspend fun signInWithEmail(email: String, password: String): AuthResult
+    suspend fun signInWithEmail(
+        email: String,
+        password: String,
+    ): AuthResult
 
-    suspend fun signUpWithEmail(email: String, password: String): AuthResult
+    suspend fun signUpWithEmail(
+        email: String,
+        password: String,
+    ): AuthResult
 
     suspend fun signInWithGoogle(idToken: String): AuthResult
 

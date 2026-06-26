@@ -73,10 +73,11 @@ fun RegisterScreen(
             onValueChange = { email = it },
             label = { Text("Correo electrónico") },
             modifier = Modifier.fillMaxWidth(),
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Email,
-                imeAction = ImeAction.Next,
-            ),
+            keyboardOptions =
+                KeyboardOptions(
+                    keyboardType = KeyboardType.Email,
+                    imeAction = ImeAction.Next,
+                ),
             singleLine = true,
         )
 
@@ -88,10 +89,11 @@ fun RegisterScreen(
             label = { Text("Contraseña") },
             modifier = Modifier.fillMaxWidth(),
             visualTransformation = PasswordVisualTransformation(),
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Password,
-                imeAction = ImeAction.Next,
-            ),
+            keyboardOptions =
+                KeyboardOptions(
+                    keyboardType = KeyboardType.Password,
+                    imeAction = ImeAction.Next,
+                ),
             singleLine = true,
         )
 
@@ -103,10 +105,11 @@ fun RegisterScreen(
             label = { Text("Confirmar contraseña") },
             modifier = Modifier.fillMaxWidth(),
             visualTransformation = PasswordVisualTransformation(),
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Password,
-                imeAction = ImeAction.Done,
-            ),
+            keyboardOptions =
+                KeyboardOptions(
+                    keyboardType = KeyboardType.Password,
+                    imeAction = ImeAction.Done,
+                ),
             singleLine = true,
         )
 
@@ -136,8 +139,9 @@ fun RegisterScreen(
                 viewModel.signUpWithEmail(email, password)
             },
             modifier = Modifier.fillMaxWidth(),
-            enabled = email.isNotBlank() && password.isNotBlank() &&
-                confirmPassword.isNotBlank() && !state.isLoading,
+            enabled =
+                email.isNotBlank() && password.isNotBlank() &&
+                    confirmPassword.isNotBlank() && !state.isLoading,
         ) {
             if (state.isLoading) {
                 CircularProgressIndicator(

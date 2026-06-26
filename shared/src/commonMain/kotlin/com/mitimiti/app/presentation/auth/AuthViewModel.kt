@@ -43,7 +43,10 @@ class AuthViewModel(
         }
     }
 
-    fun signInWithEmail(email: String, password: String) {
+    fun signInWithEmail(
+        email: String,
+        password: String,
+    ) {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
             when (val result = authRepository.signInWithEmail(email, password)) {
@@ -57,7 +60,10 @@ class AuthViewModel(
         }
     }
 
-    fun signUpWithEmail(email: String, password: String) {
+    fun signUpWithEmail(
+        email: String,
+        password: String,
+    ) {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
             when (val result = authRepository.signUpWithEmail(email, password)) {

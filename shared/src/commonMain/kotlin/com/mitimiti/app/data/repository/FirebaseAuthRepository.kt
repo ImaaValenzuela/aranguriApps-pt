@@ -11,7 +11,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
 class FirebaseAuthRepository : AuthRepository {
-
     private val auth = Firebase.auth
 
     override val currentUser: User?
@@ -20,7 +19,10 @@ class FirebaseAuthRepository : AuthRepository {
     override val isAuthenticated: Boolean
         get() = auth.currentUser != null
 
-    override suspend fun signInWithEmail(email: String, password: String): AuthResult {
+    override suspend fun signInWithEmail(
+        email: String,
+        password: String,
+    ): AuthResult {
         return try {
             val result = auth.signInWithEmailAndPassword(email, password)
             val user = result.user
@@ -34,7 +36,10 @@ class FirebaseAuthRepository : AuthRepository {
         }
     }
 
-    override suspend fun signUpWithEmail(email: String, password: String): AuthResult {
+    override suspend fun signUpWithEmail(
+        email: String,
+        password: String,
+    ): AuthResult {
         return try {
             val result = auth.createUserWithEmailAndPassword(email, password)
             val user = result.user

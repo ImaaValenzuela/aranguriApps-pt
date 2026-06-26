@@ -33,6 +33,7 @@ sealed interface Screen {
 
 private sealed interface AuthScreen {
     data object Login : AuthScreen
+
     data object Register : AuthScreen
 }
 
