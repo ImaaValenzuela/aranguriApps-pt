@@ -12,7 +12,11 @@ import com.mitimiti.app.presentation.theme.MitiMitiTheme
 
 @Composable
 @Suppress("FunctionName")
-fun App() {
+fun App(
+    onGoogleSignInClick: () -> Unit = {},
+    googleIdToken: String? = null,
+    onGoogleTokenConsumed: () -> Unit = {},
+) {
     MitiMitiTheme {
         Box(
             modifier =
@@ -21,7 +25,11 @@ fun App() {
                     .safeContentPadding()
                     .fillMaxSize(),
         ) {
-            AppNavigation()
+            AppNavigation(
+                onGoogleSignInClick = onGoogleSignInClick,
+                googleIdToken = googleIdToken,
+                onGoogleTokenConsumed = onGoogleTokenConsumed,
+            )
         }
     }
 }

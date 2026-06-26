@@ -1,7 +1,9 @@
 package com.mitimiti.app.data.model
 
 import com.mitimiti.app.domain.model.Friend
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class FriendDto(
     val id: String = "",
     val name: String = "",

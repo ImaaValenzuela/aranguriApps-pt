@@ -1,7 +1,9 @@
 package com.mitimiti.app.data.model
 
 import com.mitimiti.app.domain.model.Table
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class TableDto(
     val id: String = "",
     val name: String = "",

@@ -1,7 +1,9 @@
 package com.mitimiti.app.data.model
 
 import com.mitimiti.app.domain.model.ExpenseItem
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class ExpenseDto(
     val id: String = "",
     val name: String = "",
