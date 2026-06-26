@@ -36,6 +36,8 @@ compose-ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "composeMul
 compose-components-resources = { module = "org.jetbrains.compose.components:components-resources", version.ref = "composeMultiplatform" }
 compose-uiToolingPreview = { module = "org.jetbrains.compose.ui:ui-tooling-preview", version.ref = "composeMultiplatform" }
 firebase-database = { module = "dev.gitlive:firebase-database", version.ref = "firebase-kotlin" }
+firebase-auth = { module = "dev.gitlive:firebase-auth", version.ref = "firebase-kotlin" }
+play-services-auth = { module = "com.google.android.gms:play-services-auth", version = "21.2.0" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version = "1.8.0" }
 
 [plugins]

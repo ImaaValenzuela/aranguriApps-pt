@@ -50,6 +50,7 @@ kotlin {
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
             implementation(libs.firebase.database)
+            implementation(libs.firebase.auth)
             implementation(libs.kotlinx.serialization.json)
         }
         commonTest.dependencies {
