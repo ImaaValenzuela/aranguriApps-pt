@@ -1,5 +1,11 @@
 package com.mitimiti.app.presentation.navigation
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -59,21 +65,34 @@ fun AppNavigation(
     if (!authState.isAuthenticated) {
         var currentAuthScreen by remember { mutableStateOf<AuthScreen>(AuthScreen.Login) }
 
-        when (currentAuthScreen) {
-            AuthScreen.Login -> {
-                LoginScreen(
-                    viewModel = authViewModel,
-                    onGoogleSignInClick = onGoogleSignInClick,
-                    onNavigateToRegister = { currentAuthScreen = AuthScreen.Register },
-                    modifier = modifier,
-                )
-            }
-            AuthScreen.Register -> {
-                RegisterScreen(
-                    viewModel = authViewModel,
-                    onNavigateToLogin = { currentAuthScreen = AuthScreen.Login },
-                    modifier = modifier,
-                )
+        AnimatedContent(
+            targetState = currentAuthScreen,
+            transitionSpec = {
+                if (targetState == AuthScreen.Register) {
+                    slideInHorizontally { width -> width } + fadeIn() togetherWith
+                        slideOutHorizontally { width -> -width } + fadeOut()
+                } else {
+                    slideInHorizontally { width -> -width } + fadeIn() togetherWith
+                        slideOutHorizontally { width -> width } + fadeOut()
+                }
+            },
+        ) { authScreen ->
+            when (authScreen) {
+                AuthScreen.Login -> {
+                    LoginScreen(
+                        viewModel = authViewModel,
+                        onGoogleSignInClick = onGoogleSignInClick,
+                        onNavigateToRegister = { currentAuthScreen = AuthScreen.Register },
+                        modifier = modifier,
+                    )
+                }
+                AuthScreen.Register -> {
+                    RegisterScreen(
+                        viewModel = authViewModel,
+                        onNavigateToLogin = { currentAuthScreen = AuthScreen.Login },
+                        modifier = modifier,
+                    )
+                }
             }
         }
     } else {
@@ -88,36 +107,64 @@ fun AppNavigation(
         val expenseViewModel = remember { ExpenseViewModel(tableRepository) }
         val summaryViewModel = remember { SummaryViewModel(tableRepository, calculateSplitExpensesUseCase) }
 
-        when (val screen = currentScreen) {
-            is Screen.TableInput -> {
-                TableScreen(
-                    viewModel = tableViewModel,
-                    onNavigateToExpenses = { tableId ->
-                        currentScreen = Screen.ExpenseInput(tableId)
-                    },
-                    onSignOut = { authViewModel.signOut() },
-                    modifier = modifier,
-                )
-            }
-            is Screen.ExpenseInput -> {
-                ExpenseScreen(
-                    tableId = screen.tableId,
-                    viewModel = expenseViewModel,
-                    onNavigateToSummary = { tableId ->
-                        currentScreen = Screen.SummaryView(tableId)
-                    },
-                    modifier = modifier,
-                )
-            }
-            is Screen.SummaryView -> {
-                SummaryScreen(
-                    tableId = screen.tableId,
-                    viewModel = summaryViewModel,
-                    onRestart = {
-                        currentScreen = Screen.TableInput
-                    },
-                    modifier = modifier,
-                )
+        AnimatedContent(
+            targetState = currentScreen,
+            transitionSpec = {
+                val from = initialState
+                val to = targetState
+                val isForward =
+                    when {
+                        from is Screen.TableInput && to is Screen.ExpenseInput -> true
+                        from is Screen.TableInput && to is Screen.SummaryView -> true
+                        from is Screen.ExpenseInput && to is Screen.SummaryView -> true
+                        else -> false
+                    }
+                if (isForward) {
+                    slideInHorizontally { width -> width } + fadeIn() togetherWith
+                        slideOutHorizontally { width -> -width } + fadeOut()
+                } else {
+                    slideInHorizontally { width -> -width } + fadeIn() togetherWith
+                        slideOutHorizontally { width -> width } + fadeOut()
+                }
+            },
+        ) { screen ->
+            when (screen) {
+                is Screen.TableInput -> {
+                    TableScreen(
+                        viewModel = tableViewModel,
+                        onNavigateToExpenses = { tableId ->
+                            currentScreen = Screen.ExpenseInput(tableId)
+                        },
+                        onSignOut = { authViewModel.signOut() },
+                        modifier = modifier,
+                    )
+                }
+                is Screen.ExpenseInput -> {
+                    ExpenseScreen(
+                        tableId = screen.tableId,
+                        viewModel = expenseViewModel,
+                        onNavigateToSummary = { tableId ->
+                            currentScreen = Screen.SummaryView(tableId)
+                        },
+                        onBack = {
+                            currentScreen = Screen.TableInput
+                        },
+                        modifier = modifier,
+                    )
+                }
+                is Screen.SummaryView -> {
+                    SummaryScreen(
+                        tableId = screen.tableId,
+                        viewModel = summaryViewModel,
+                        onRestart = {
+                            currentScreen = Screen.TableInput
+                        },
+                        onBack = {
+                            currentScreen = Screen.ExpenseInput(screen.tableId)
+                        },
+                        modifier = modifier,
+                    )
+                }
             }
         }
     }
