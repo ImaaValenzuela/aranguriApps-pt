@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -43,6 +44,7 @@ fun ExpenseScreen(
     tableId: String,
     viewModel: ExpenseViewModel,
     onNavigateToSummary: (tableId: String) -> Unit,
+    onBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -73,8 +75,22 @@ fun ExpenseScreen(
         modifier =
             modifier
                 .fillMaxSize()
+                .safeDrawingPadding()
                 .padding(16.dp),
     ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Start,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            TextButton(
+                onClick = onBack,
+            ) {
+                Text("← Volver a la Mesa")
+            }
+        }
+        Spacer(modifier = Modifier.height(4.dp))
+
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,

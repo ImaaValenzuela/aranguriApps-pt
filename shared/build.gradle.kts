@@ -52,6 +52,7 @@ kotlin {
             implementation(libs.firebase.database)
             implementation(libs.firebase.auth)
             implementation(libs.kotlinx.serialization.json)
+            implementation(libs.jetbrains.navigation.compose)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
