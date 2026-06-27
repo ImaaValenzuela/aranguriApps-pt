@@ -203,6 +203,32 @@ class TableViewModel(
         }
     }
 
+    fun removeFriend(friendId: String) {
+        val currentTableId = _uiState.value.tableId
+        if (currentTableId.isEmpty()) return
+
+        viewModelScope.launch {
+            val table = tableRepository.getTable(currentTableId)
+            if (table != null && !table.isClosed) {
+                val updatedFriends = table.friends.filter { it.id != friendId }
+                val updatedExpenses =
+                    table.expenses.mapNotNull { expense ->
+                        if (expense.paidByFriendId == friendId) {
+                            null
+                        } else {
+                            val updatedSharers = expense.sharedByFriendIds.filter { it != friendId }
+                            if (updatedSharers.isEmpty()) {
+                                null
+                            } else {
+                                expense.copy(sharedByFriendIds = updatedSharers)
+                            }
+                        }
+                    }
+                tableRepository.saveTable(table.copy(friends = updatedFriends, expenses = updatedExpenses))
+            }
+        }
+    }
+
     override fun onCleared() {
         observeJob?.cancel()
         userTablesJob?.cancel()
