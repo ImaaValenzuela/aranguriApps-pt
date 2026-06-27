@@ -9,4 +9,11 @@ interface TableRepository {
     suspend fun saveTable(table: Table)
 
     fun observeTable(id: String): Flow<Table?>
+
+    fun observeUserTables(userId: String): Flow<List<Table>>
+
+    suspend fun saveUserTableRelation(
+        userId: String,
+        tableId: String,
+    )
 }

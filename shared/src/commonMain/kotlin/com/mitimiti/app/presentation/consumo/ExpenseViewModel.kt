@@ -23,6 +23,7 @@ data class ExpenseUiState(
     val tipPercentage: Double = 10.0,
     val fixedExtraCost: Double = 0.0,
     val cubiertoPerPerson: Double = 0.0,
+    val isClosed: Boolean = false,
     val isLoading: Boolean = false,
     val error: String? = null,
 )
@@ -58,6 +59,7 @@ class ExpenseViewModel(
                                 tipPercentage = table.tipPercentage,
                                 fixedExtraCost = table.fixedExtraCost,
                                 cubiertoPerPerson = table.cubiertoPerPerson,
+                                isClosed = table.isClosed,
                                 isLoading = false,
                             )
                         }
@@ -72,7 +74,9 @@ class ExpenseViewModel(
         sharedByFriendIds: List<String>,
         paidByFriendId: String,
     ) {
-        val tableId = _uiState.value.tableId
+        val state = _uiState.value
+        if (state.isClosed) return
+        val tableId = state.tableId
         if (tableId.isEmpty() || name.trim().isEmpty() || cost <= 0 || paidByFriendId.isEmpty()) return
 
         viewModelScope.launch {
@@ -84,7 +88,7 @@ class ExpenseViewModel(
                     sharedByFriendIds = sharedByFriendIds,
                     paidByFriendId = paidByFriendId,
                 )
-            val updatedExpenses = _uiState.value.expenses + newItem
+            val updatedExpenses = state.expenses + newItem
 
             _uiState.update { it.copy(expenses = updatedExpenses) }
 
@@ -96,6 +100,8 @@ class ExpenseViewModel(
         tipPercentage: Double,
         fixedExtraCost: Double,
     ) {
+        val state = _uiState.value
+        if (state.isClosed) return
         _uiState.update {
             it.copy(
                 tipPercentage = tipPercentage,

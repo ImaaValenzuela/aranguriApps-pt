@@ -83,53 +83,69 @@ fun SummaryScreen(
         Spacer(modifier = Modifier.height(12.dp))
 
         // Split Strategy Toggle Selector
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            val isEqual = state.splitType == SplitType.EQUAL
-            Button(
-                onClick = { viewModel.updateSplitType(SplitType.EQUAL) },
-                colors =
-                    ButtonDefaults.buttonColors(
-                        containerColor =
-                            if (isEqual) {
-                                MaterialTheme.colorScheme.primary
-                            } else {
-                                MaterialTheme.colorScheme.surfaceVariant
-                            },
-                        contentColor =
-                            if (isEqual) {
-                                MaterialTheme.colorScheme.onPrimary
-                            } else {
-                                MaterialTheme.colorScheme.onSurfaceVariant
-                            },
-                    ),
-                modifier = Modifier.weight(1f),
+        if (state.isClosed) {
+            val strategyText = if (state.splitType == SplitType.EQUAL) "Partes Iguales" else "Consumo"
+            Card(
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
+                modifier = Modifier.fillMaxWidth(),
             ) {
-                Text("Partes Iguales", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold)
+                Text(
+                    text = "🔒 MESA CERRADA - Dividida por $strategyText",
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onErrorContainer,
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.padding(12.dp),
+                )
             }
-
-            Button(
-                onClick = { viewModel.updateSplitType(SplitType.BY_CONSUMPTION) },
-                colors =
-                    ButtonDefaults.buttonColors(
-                        containerColor =
-                            if (!isEqual) {
-                                MaterialTheme.colorScheme.primary
-                            } else {
-                                MaterialTheme.colorScheme.surfaceVariant
-                            },
-                        contentColor =
-                            if (!isEqual) {
-                                MaterialTheme.colorScheme.onPrimary
-                            } else {
-                                MaterialTheme.colorScheme.onSurfaceVariant
-                            },
-                    ),
-                modifier = Modifier.weight(1f),
+        } else {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                Text("Por Consumo", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold)
+                val isEqual = state.splitType == SplitType.EQUAL
+                Button(
+                    onClick = { viewModel.updateSplitType(SplitType.EQUAL) },
+                    colors =
+                        ButtonDefaults.buttonColors(
+                            containerColor =
+                                if (isEqual) {
+                                    MaterialTheme.colorScheme.primary
+                                } else {
+                                    MaterialTheme.colorScheme.surfaceVariant
+                                },
+                            contentColor =
+                                if (isEqual) {
+                                    MaterialTheme.colorScheme.onPrimary
+                                } else {
+                                    MaterialTheme.colorScheme.onSurfaceVariant
+                                },
+                        ),
+                    modifier = Modifier.weight(1f),
+                ) {
+                    Text("Partes Iguales", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold)
+                }
+
+                Button(
+                    onClick = { viewModel.updateSplitType(SplitType.BY_CONSUMPTION) },
+                    colors =
+                        ButtonDefaults.buttonColors(
+                            containerColor =
+                                if (!isEqual) {
+                                    MaterialTheme.colorScheme.primary
+                                } else {
+                                    MaterialTheme.colorScheme.surfaceVariant
+                                },
+                            contentColor =
+                                if (!isEqual) {
+                                    MaterialTheme.colorScheme.onPrimary
+                                } else {
+                                    MaterialTheme.colorScheme.onSurfaceVariant
+                                },
+                        ),
+                    modifier = Modifier.weight(1f),
+                ) {
+                    Text("Por Consumo", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold)
+                }
             }
         }
 
@@ -338,14 +354,24 @@ fun SummaryScreen(
             Spacer(modifier = Modifier.width(8.dp))
 
             Button(
-                onClick = onRestart,
+                onClick = {
+                    if (!state.isClosed) {
+                        viewModel.closeTable()
+                    }
+                    onRestart()
+                },
                 modifier = Modifier.weight(1f),
                 colors =
                     ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.error,
+                        containerColor =
+                            if (state.isClosed) {
+                                MaterialTheme.colorScheme.primary
+                            } else {
+                                MaterialTheme.colorScheme.error
+                            },
                     ),
             ) {
-                Text("Cerrar Mesa")
+                Text(if (state.isClosed) "Volver al Inicio" else "Cerrar Mesa")
             }
         }
     }

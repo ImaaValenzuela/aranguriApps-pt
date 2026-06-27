@@ -111,228 +111,243 @@ fun ExpenseScreen(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // Locked OCR Receipt Scanner Option
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors =
-                CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                ),
-        ) {
-            Row(
-                modifier =
-                    Modifier
-                        .padding(12.dp)
-                        .fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
+        if (state.isClosed) {
+            Card(
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
+                modifier = Modifier.fillMaxWidth(),
             ) {
-                Row(
-                    modifier = Modifier.weight(1f),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text("📷", style = MaterialTheme.typography.titleLarge)
-                    Spacer(modifier = Modifier.width(10.dp))
-                    Column {
-                        Text(
-                            text = "Escanear Ticket",
-                            fontWeight = FontWeight.Bold,
-                            style = MaterialTheme.typography.bodyMedium,
-                        )
-                        Text(
-                            text = "Carga automática con IA y foto",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                        )
-                    }
-                }
                 Text(
-                    text = "🔒 Próximamente",
-                    style = MaterialTheme.typography.labelSmall,
+                    text = "🔒 MESA CERRADA - Modo de Solo Lectura. No se pueden modificar ni eliminar consumos.",
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.outline,
+                    color = MaterialTheme.colorScheme.onErrorContainer,
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.padding(12.dp),
                 )
             }
-        }
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-        ) {
-            Column(modifier = Modifier.padding(12.dp)) {
-                Text(
-                    text = "Añadir Producto",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Row(modifier = Modifier.fillMaxWidth()) {
-                    OutlinedTextField(
-                        value = itemNameInput,
-                        onValueChange = { itemNameInput = it },
-                        label = { Text("Ítem (Ej: Pizza, Asado)") },
-                        modifier = Modifier.weight(1.5f),
-                        singleLine = true,
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    OutlinedTextField(
-                        value = itemCostInput,
-                        onValueChange = { itemCostInput = it },
-                        label = { Text("Costo ($)") },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                        modifier = Modifier.weight(1f),
-                        singleLine = true,
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "Pagado por:",
-                    style = MaterialTheme.typography.bodySmall,
-                    fontWeight = FontWeight.Bold,
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-
-                LazyRow(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+        } else {
+            // Locked OCR Receipt Scanner Option
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors =
+                    CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                    ),
+            ) {
+                Row(
+                    modifier =
+                        Modifier
+                            .padding(12.dp)
+                            .fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
-                    items(state.friends) { friend ->
-                        val isPayer = selectedPayerId == friend.id
-                        Card(
-                            colors =
-                                CardDefaults.cardColors(
-                                    containerColor =
-                                        if (isPayer) {
-                                            MaterialTheme.colorScheme.primaryContainer
-                                        } else {
-                                            MaterialTheme.colorScheme.surfaceVariant
-                                        },
-                                ),
-                            modifier =
-                                Modifier.clickable {
-                                    selectedPayerId = friend.id
-                                },
-                        ) {
+                    Row(
+                        modifier = Modifier.weight(1f),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text("📷", style = MaterialTheme.typography.titleLarge)
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Column {
                             Text(
-                                text = friend.name,
-                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                                text = "Escanear Ticket",
+                                fontWeight = FontWeight.Bold,
+                                style = MaterialTheme.typography.bodyMedium,
+                            )
+                            Text(
+                                text = "Carga automática con IA y foto",
                                 style = MaterialTheme.typography.bodySmall,
-                                fontWeight = if (isPayer) FontWeight.Bold else FontWeight.Normal,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                             )
                         }
                     }
-                }
-
-                Spacer(modifier = Modifier.height(8.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
                     Text(
-                        text = "Compartido por:",
+                        text = "🔒 Próximamente",
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.outline,
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Column(modifier = Modifier.padding(12.dp)) {
+                    Text(
+                        text = "Añadir Producto",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(modifier = Modifier.fillMaxWidth()) {
+                        OutlinedTextField(
+                            value = itemNameInput,
+                            onValueChange = { itemNameInput = it },
+                            label = { Text("Ítem (Ej: Pizza, Asado)") },
+                            modifier = Modifier.weight(1.5f),
+                            singleLine = true,
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        OutlinedTextField(
+                            value = itemCostInput,
+                            onValueChange = { itemCostInput = it },
+                            label = { Text("Costo ($)") },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            modifier = Modifier.weight(1f),
+                            singleLine = true,
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "Pagado por:",
                         style = MaterialTheme.typography.bodySmall,
                         fontWeight = FontWeight.Bold,
                     )
-                    TextButton(
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    LazyRow(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    ) {
+                        items(state.friends) { friend ->
+                            val isPayer = selectedPayerId == friend.id
+                            Card(
+                                colors =
+                                    CardDefaults.cardColors(
+                                        containerColor =
+                                            if (isPayer) {
+                                                MaterialTheme.colorScheme.primaryContainer
+                                            } else {
+                                                MaterialTheme.colorScheme.surfaceVariant
+                                            },
+                                    ),
+                                modifier =
+                                    Modifier.clickable {
+                                        selectedPayerId = friend.id
+                                    },
+                            ) {
+                                Text(
+                                    text = friend.name,
+                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    fontWeight = if (isPayer) FontWeight.Bold else FontWeight.Normal,
+                                )
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(
+                            text = "Compartido por:",
+                            style = MaterialTheme.typography.bodySmall,
+                            fontWeight = FontWeight.Bold,
+                        )
+                        TextButton(
+                            onClick = {
+                                if (selectedFriendIds.size == state.friends.size) {
+                                    selectedFriendIds.clear()
+                                } else {
+                                    selectedFriendIds.clear()
+                                    selectedFriendIds.addAll(state.friends.map { it.id })
+                                }
+                            },
+                        ) {
+                            Text(
+                                text = if (selectedFriendIds.size == state.friends.size) "Ninguno" else "Todos",
+                                style = MaterialTheme.typography.labelSmall,
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    LazyRow(
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        items(state.friends) { friend ->
+                            val isChecked = selectedFriendIds.contains(friend.id)
+                            Card(
+                                colors =
+                                    CardDefaults.cardColors(
+                                        containerColor =
+                                            if (isChecked) {
+                                                MaterialTheme.colorScheme.primaryContainer
+                                            } else {
+                                                MaterialTheme.colorScheme.surfaceVariant
+                                            },
+                                    ),
+                                modifier =
+                                    Modifier
+                                        .padding(horizontal = 4.dp, vertical = 2.dp)
+                                        .clickable {
+                                            if (isChecked) {
+                                                selectedFriendIds.remove(friend.id)
+                                            } else {
+                                                selectedFriendIds.add(friend.id)
+                                            }
+                                        },
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                ) {
+                                    Checkbox(
+                                        checked = isChecked,
+                                        onCheckedChange = { checked ->
+                                            if (checked == true) {
+                                                selectedFriendIds.add(friend.id)
+                                            } else {
+                                                selectedFriendIds.remove(friend.id)
+                                            }
+                                        },
+                                    )
+                                    Text(text = friend.name, style = MaterialTheme.typography.bodySmall)
+                                }
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    val isCostValid = itemCostInput.toDoubleOrNull() != null
+                    Button(
                         onClick = {
-                            if (selectedFriendIds.size == state.friends.size) {
-                                selectedFriendIds.clear()
-                            } else {
+                            val cost = itemCostInput.toDoubleOrNull() ?: 0.0
+                            val isValidForm =
+                                itemNameInput.isNotEmpty() &&
+                                    cost > 0 &&
+                                    selectedFriendIds.isNotEmpty() &&
+                                    selectedPayerId.isNotEmpty()
+                            if (isValidForm) {
+                                viewModel.addExpenseItem(
+                                    name = itemNameInput,
+                                    cost = cost,
+                                    sharedByFriendIds = selectedFriendIds.toList(),
+                                    paidByFriendId = selectedPayerId,
+                                )
+                                itemNameInput = ""
+                                itemCostInput = ""
+                                // Keep payer same, but reset sharers to all
                                 selectedFriendIds.clear()
                                 selectedFriendIds.addAll(state.friends.map { it.id })
                             }
                         },
-                    ) {
-                        Text(
-                            text = if (selectedFriendIds.size == state.friends.size) "Ninguno" else "Todos",
-                            style = MaterialTheme.typography.labelSmall,
-                        )
-                    }
-                }
-                Spacer(modifier = Modifier.height(4.dp))
-
-                LazyRow(
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    items(state.friends) { friend ->
-                        val isChecked = selectedFriendIds.contains(friend.id)
-                        Card(
-                            colors =
-                                CardDefaults.cardColors(
-                                    containerColor =
-                                        if (isChecked) {
-                                            MaterialTheme.colorScheme.primaryContainer
-                                        } else {
-                                            MaterialTheme.colorScheme.surfaceVariant
-                                        },
-                                ),
-                            modifier =
-                                Modifier
-                                    .padding(horizontal = 4.dp, vertical = 2.dp)
-                                    .clickable {
-                                        if (isChecked) {
-                                            selectedFriendIds.remove(friend.id)
-                                        } else {
-                                            selectedFriendIds.add(friend.id)
-                                        }
-                                    },
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                            ) {
-                                Checkbox(
-                                    checked = isChecked,
-                                    onCheckedChange = { checked ->
-                                        if (checked == true) {
-                                            selectedFriendIds.add(friend.id)
-                                        } else {
-                                            selectedFriendIds.remove(friend.id)
-                                        }
-                                    },
-                                )
-                                Text(text = friend.name, style = MaterialTheme.typography.bodySmall)
-                            }
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                val isCostValid = itemCostInput.toDoubleOrNull() != null
-                Button(
-                    onClick = {
-                        val cost = itemCostInput.toDoubleOrNull() ?: 0.0
-                        val isValidForm =
+                        modifier = Modifier.align(Alignment.End),
+                        enabled =
                             itemNameInput.isNotEmpty() &&
-                                cost > 0 &&
+                                isCostValid &&
                                 selectedFriendIds.isNotEmpty() &&
-                                selectedPayerId.isNotEmpty()
-                        if (isValidForm) {
-                            viewModel.addExpenseItem(
-                                name = itemNameInput,
-                                cost = cost,
-                                sharedByFriendIds = selectedFriendIds.toList(),
-                                paidByFriendId = selectedPayerId,
-                            )
-                            itemNameInput = ""
-                            itemCostInput = ""
-                            // Keep payer same, but reset sharers to all
-                            selectedFriendIds.clear()
-                            selectedFriendIds.addAll(state.friends.map { it.id })
-                        }
-                    },
-                    modifier = Modifier.align(Alignment.End),
-                    enabled =
-                        itemNameInput.isNotEmpty() &&
-                            isCostValid &&
-                            selectedFriendIds.isNotEmpty() &&
-                            selectedPayerId.isNotEmpty(),
-                ) {
-                    Text("Añadir Gasto")
+                                selectedPayerId.isNotEmpty(),
+                    ) {
+                        Text("Añadir Gasto")
+                    }
                 }
             }
         }
@@ -418,6 +433,7 @@ fun ExpenseScreen(
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         modifier = Modifier.weight(1f),
                         singleLine = true,
+                        enabled = !state.isClosed,
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                     OutlinedTextField(
@@ -432,6 +448,7 @@ fun ExpenseScreen(
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         modifier = Modifier.weight(1f),
                         singleLine = true,
+                        enabled = !state.isClosed,
                     )
                 }
             }
@@ -443,7 +460,7 @@ fun ExpenseScreen(
             modifier = Modifier.fillMaxWidth(),
             enabled = state.expenses.isNotEmpty(),
         ) {
-            Text("Ir a Cierre y Cuenta")
+            Text(if (state.isClosed) "Ver Cuenta Final" else "Ir a Cierre y Cuenta")
         }
     }
 }
