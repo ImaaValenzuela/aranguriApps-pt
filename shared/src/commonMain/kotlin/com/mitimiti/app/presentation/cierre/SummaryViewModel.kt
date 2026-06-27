@@ -18,6 +18,7 @@ data class SummaryUiState(
     val splitType: SplitType = SplitType.BY_CONSUMPTION,
     val billSummary: TableBillSummary? = null,
     val formattedShareText: String = "",
+    val isClosed: Boolean = false,
     val isCopied: Boolean = false,
     val isLoading: Boolean = false,
     val error: String? = null,
@@ -53,6 +54,7 @@ class SummaryViewModel(
                                 splitType = table.splitType,
                                 billSummary = summary,
                                 formattedShareText = shareText,
+                                isClosed = table.isClosed,
                                 isLoading = false,
                             )
                         }
@@ -67,8 +69,20 @@ class SummaryViewModel(
 
         viewModelScope.launch {
             val table = tableRepository.getTable(tableId)
-            if (table != null) {
+            if (table != null && !table.isClosed) {
                 tableRepository.saveTable(table.copy(splitType = splitType))
+            }
+        }
+    }
+
+    fun closeTable() {
+        val tableId = _uiState.value.tableId
+        if (tableId.isEmpty()) return
+
+        viewModelScope.launch {
+            val table = tableRepository.getTable(tableId)
+            if (table != null) {
+                tableRepository.saveTable(table.copy(isClosed = true))
             }
         }
     }

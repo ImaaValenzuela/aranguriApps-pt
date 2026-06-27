@@ -27,6 +27,7 @@ import com.mitimiti.app.presentation.cierre.SummaryScreen
 import com.mitimiti.app.presentation.cierre.SummaryViewModel
 import com.mitimiti.app.presentation.consumo.ExpenseScreen
 import com.mitimiti.app.presentation.consumo.ExpenseViewModel
+import com.mitimiti.app.presentation.mesa.TableListScreen
 import com.mitimiti.app.presentation.mesa.TableScreen
 import com.mitimiti.app.presentation.mesa.TableViewModel
 
@@ -49,7 +50,14 @@ fun AppNavigation(
     val syncRepository = remember { FirebaseRealtimeSyncRepository() }
     val calculateSplitExpensesUseCase = remember { CalculateSplitExpensesUseCase() }
 
-    val tableViewModel = remember { TableViewModel(tableRepository, syncRepository) }
+    val tableViewModel =
+        remember {
+            TableViewModel(
+                tableRepository = tableRepository,
+                authRepository = authRepository,
+                syncRepository = syncRepository,
+            )
+        }
     val expenseViewModel = remember { ExpenseViewModel(tableRepository) }
     val summaryViewModel = remember { SummaryViewModel(tableRepository, calculateSplitExpensesUseCase) }
 
@@ -63,7 +71,7 @@ fun AppNavigation(
     // Monitor authentication state and adjust navigation
     LaunchedEffect(authState.isAuthenticated) {
         if (authState.isAuthenticated) {
-            navController.navigate("table") {
+            navController.navigate("table_list") {
                 popUpTo(0) { inclusive = true }
             }
         } else {
@@ -75,7 +83,7 @@ fun AppNavigation(
 
     val startDestination =
         remember {
-            if (authState.isAuthenticated) "table" else "login"
+            if (authState.isAuthenticated) "table_list" else "login"
         }
 
     NavHost(
@@ -108,13 +116,34 @@ fun AppNavigation(
                 modifier = Modifier,
             )
         }
-        composable("table") {
-            TableScreen(
+        composable("table_list") {
+            TableListScreen(
                 viewModel = tableViewModel,
-                onNavigateToExpenses = { tableId ->
-                    navController.navigate("expense/$tableId")
+                onNavigateToLobby = { tableId ->
+                    navController.navigate("table_lobby/$tableId")
                 },
-                onSignOut = { authViewModel.signOut() },
+                onSignOut = {
+                    authViewModel.signOut()
+                    tableViewModel.resetTableState()
+                },
+                modifier = Modifier,
+            )
+        }
+        composable(
+            route = "table_lobby/{tableId}",
+            arguments = listOf(navArgument("tableId") { type = NavType.StringType }),
+        ) { backStackEntry ->
+            val tableId = backStackEntry.arguments?.getString("tableId") ?: ""
+            TableScreen(
+                tableId = tableId,
+                viewModel = tableViewModel,
+                onNavigateToExpenses = { id ->
+                    navController.navigate("expense/$id")
+                },
+                onBack = {
+                    tableViewModel.resetTableState()
+                    navController.popBackStack()
+                },
                 modifier = Modifier,
             )
         }
@@ -144,8 +173,9 @@ fun AppNavigation(
                 tableId = tableId,
                 viewModel = summaryViewModel,
                 onRestart = {
-                    navController.navigate("table") {
-                        popUpTo("table") { inclusive = true }
+                    tableViewModel.resetTableState()
+                    navController.navigate("table_list") {
+                        popUpTo("table_list") { inclusive = true }
                     }
                 },
                 onBack = {

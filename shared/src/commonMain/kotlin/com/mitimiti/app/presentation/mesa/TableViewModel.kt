@@ -6,6 +6,7 @@ import com.mitimiti.app.domain.model.Friend
 import com.mitimiti.app.domain.model.SplitType
 import com.mitimiti.app.domain.model.Table
 import com.mitimiti.app.domain.model.TableType
+import com.mitimiti.app.domain.repository.AuthRepository
 import com.mitimiti.app.domain.repository.RealtimeSyncRepository
 import com.mitimiti.app.domain.repository.TableRepository
 import kotlinx.coroutines.Job
@@ -24,18 +25,40 @@ data class TableUiState(
     val tipPercentage: Double = 10.0,
     val fixedExtraCost: Double = 0.0,
     val cubiertoPerPerson: Double = 0.0,
+    val isClosed: Boolean = false,
     val isLoading: Boolean = false,
     val error: String? = null,
 )
 
 class TableViewModel(
     private val tableRepository: TableRepository,
+    private val authRepository: AuthRepository,
     private val syncRepository: RealtimeSyncRepository,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(TableUiState())
     val uiState: StateFlow<TableUiState> = _uiState.asStateFlow()
 
+    private val _tables = MutableStateFlow<List<Table>>(emptyList())
+    val tables: StateFlow<List<Table>> = _tables.asStateFlow()
+
     private var observeJob: Job? = null
+    private var userTablesJob: Job? = null
+
+    fun observeUserTables() {
+        val userId = authRepository.currentUser?.uid ?: return
+        userTablesJob?.cancel()
+        userTablesJob =
+            viewModelScope.launch {
+                tableRepository.observeUserTables(userId).collect { list ->
+                    _tables.value = list
+                }
+            }
+    }
+
+    fun resetTableState() {
+        observeJob?.cancel()
+        _uiState.value = TableUiState()
+    }
 
     fun createTable(
         name: String,
@@ -44,8 +67,10 @@ class TableViewModel(
         fixedExtraCost: Double = 0.0,
         cubiertoPerPerson: Double = 0.0,
         hostName: String,
+        onSuccess: (String) -> Unit,
     ) {
         viewModelScope.launch {
+            val userId = authRepository.currentUser?.uid ?: return@launch
             _uiState.update { it.copy(isLoading = true, error = null) }
             val generatedCode = (100000..999999).random().toString()
             val host = Friend(id = "friend_${ClockUtils.currentTimeMillis()}", name = hostName)
@@ -59,9 +84,11 @@ class TableViewModel(
                     tipPercentage = tipPercentage,
                     fixedExtraCost = fixedExtraCost,
                     cubiertoPerPerson = cubiertoPerPerson,
+                    isClosed = false,
                 )
 
             tableRepository.saveTable(newTable)
+            tableRepository.saveUserTableRelation(userId, generatedCode)
             syncRepository.startSync(generatedCode)
 
             _uiState.update {
@@ -73,10 +100,12 @@ class TableViewModel(
                     tipPercentage = tipPercentage,
                     fixedExtraCost = fixedExtraCost,
                     cubiertoPerPerson = cubiertoPerPerson,
+                    isClosed = false,
                     isLoading = false,
                 )
             }
             startObservingTable(generatedCode)
+            onSuccess(generatedCode)
         }
     }
 
@@ -93,6 +122,7 @@ class TableViewModel(
         }
 
         viewModelScope.launch {
+            val userId = authRepository.currentUser?.uid ?: return@launch
             _uiState.update { it.copy(isLoading = true, error = null) }
             val table = tableRepository.getTable(trimmedCode)
             if (table != null) {
@@ -106,6 +136,7 @@ class TableViewModel(
                     }
 
                 tableRepository.saveTable(updatedTable)
+                tableRepository.saveUserTableRelation(userId, trimmedCode)
                 syncRepository.startSync(trimmedCode)
 
                 _uiState.update {
@@ -118,6 +149,7 @@ class TableViewModel(
                         tipPercentage = updatedTable.tipPercentage,
                         fixedExtraCost = updatedTable.fixedExtraCost,
                         cubiertoPerPerson = updatedTable.cubiertoPerPerson,
+                        isClosed = updatedTable.isClosed,
                         isLoading = false,
                     )
                 }
@@ -145,6 +177,7 @@ class TableViewModel(
                                 tipPercentage = table.tipPercentage,
                                 fixedExtraCost = table.fixedExtraCost,
                                 cubiertoPerPerson = table.cubiertoPerPerson,
+                                isClosed = table.isClosed,
                             )
                         }
                     }
@@ -172,6 +205,7 @@ class TableViewModel(
 
     override fun onCleared() {
         observeJob?.cancel()
+        userTablesJob?.cancel()
         super.onCleared()
     }
 }

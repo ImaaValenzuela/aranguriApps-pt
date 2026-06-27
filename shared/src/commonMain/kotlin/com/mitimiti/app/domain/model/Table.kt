@@ -27,4 +27,5 @@ data class Table(
     val fixedExtraCost: Double = 0.0,
     // Cubierto per person
     val cubiertoPerPerson: Double = 0.0,
+    val isClosed: Boolean = false,
 )

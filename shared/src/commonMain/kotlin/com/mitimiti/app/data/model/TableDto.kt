@@ -16,6 +16,7 @@ data class TableDto(
     val tipPercentage: Double = 10.0,
     val fixedExtraCost: Double = 0.0,
     val cubiertoPerPerson: Double = 0.0,
+    val isClosed: Boolean = false,
 ) {
     fun toDomain(): Table {
         return Table(
@@ -28,6 +29,7 @@ data class TableDto(
             tipPercentage = tipPercentage,
             fixedExtraCost = fixedExtraCost,
             cubiertoPerPerson = cubiertoPerPerson,
+            isClosed = isClosed,
         )
     }
 
@@ -43,6 +45,7 @@ data class TableDto(
                 tipPercentage = table.tipPercentage,
                 fixedExtraCost = table.fixedExtraCost,
                 cubiertoPerPerson = table.cubiertoPerPerson,
+                isClosed = table.isClosed,
             )
         }
     }

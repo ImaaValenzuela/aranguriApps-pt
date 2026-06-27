@@ -42,4 +42,30 @@ class FirebaseRemoteDataSource {
             }
         }
     }
+
+    suspend fun saveUserTableRelation(
+        userId: String,
+        tableId: String,
+    ) {
+        try {
+            database.reference("user_tables").child(userId).child(tableId).setValue(true)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    fun observeUserTableIds(userId: String): Flow<List<String>> {
+        return database.reference("user_tables").child(userId).valueEvents.map { snapshot ->
+            if (snapshot.exists) {
+                try {
+                    val map = snapshot.value<Map<String, Boolean>>()
+                    map.keys.toList()
+                } catch (e: Exception) {
+                    emptyList()
+                }
+            } else {
+                emptyList()
+            }
+        }
+    }
 }
