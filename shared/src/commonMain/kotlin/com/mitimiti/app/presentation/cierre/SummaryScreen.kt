@@ -213,7 +213,7 @@ fun SummaryScreen(
                                 cornerRadius = 16.dp,
                                 elevation = if (!isEqual) 6.dp else 2.dp,
                                 isDark = isDark,
-                               )
+                            )
                             .padding(vertical = 12.dp),
                     contentAlignment = Alignment.Center,
                 ) {

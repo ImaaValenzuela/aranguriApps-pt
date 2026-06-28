@@ -31,11 +31,12 @@ fun WizardProgressBar(
 ) {
     val isDark = isSystemInDarkTheme()
     val steps = listOf("Juntada", "Gastos", "Cuenta")
-    val icons = listOf(
-        Icons.Default.Person,
-        Icons.Default.ShoppingCart,
-        Icons.Default.List
-    )
+    val icons =
+        listOf(
+            Icons.Default.Person,
+            Icons.Default.ShoppingCart,
+            Icons.Default.List,
+        )
 
     Row(
         modifier =
