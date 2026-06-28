@@ -1,7 +1,9 @@
 package com.mitimiti.app.presentation.consumo
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -10,17 +12,25 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -38,21 +48,26 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.mitimiti.app.domain.model.TableType
+import com.mitimiti.app.presentation.theme.ClayButton
+import com.mitimiti.app.presentation.theme.claymorphic
 
 @Composable
-@Suppress("FunctionNaming")
+@Suppress("FunctionNaming", "LongMethod")
 fun ExpenseScreen(
     tableId: String,
     viewModel: ExpenseViewModel,
+    onNavigateToLobby: (tableId: String) -> Unit,
     onNavigateToSummary: (tableId: String) -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val state by viewModel.uiState.collectAsState()
+    val isDark = isSystemInDarkTheme()
 
     var itemNameInput by remember { mutableStateOf("") }
     var itemCostInput by remember { mutableStateOf("") }
@@ -77,6 +92,12 @@ fun ExpenseScreen(
         }
     }
 
+    // Sync tip and extra inputs with state once loaded
+    LaunchedEffect(state.tipPercentage, state.fixedExtraCost) {
+        tipInput = state.tipPercentage.toString()
+        extraInput = state.fixedExtraCost.toString()
+    }
+
     Column(
         modifier =
             modifier
@@ -89,10 +110,16 @@ fun ExpenseScreen(
             horizontalArrangement = Arrangement.Start,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            TextButton(
-                onClick = onBack,
-            ) {
-                Text("← Volver a la Mesa")
+            TextButton(onClick = onBack) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = "Atrás",
+                        modifier = Modifier.size(16.dp),
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("Volver a la Juntada")
+                }
             }
         }
         Spacer(modifier = Modifier.height(4.dp))
@@ -103,47 +130,86 @@ fun ExpenseScreen(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
-                text = "Mesa: ${state.tableName}",
+                text = "Juntada: ${state.tableName}",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.secondary,
             )
-            Text(
-                text = if (state.type == TableType.RESTAURANT) "🍽️ Restaurante" else "🏠 Comida en Casa",
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.primary,
-            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = if (state.type == TableType.RESTAURANT) Icons.Default.ShoppingCart else Icons.Default.Home,
+                    contentDescription = null,
+                    modifier = Modifier.size(14.dp),
+                    tint = MaterialTheme.colorScheme.primary,
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    text = if (state.type == TableType.RESTAURANT) "Restaurante" else "Asado / Casa",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+            }
         }
 
-        Spacer(modifier = Modifier.height(12.dp))
+        // Wizard Progress Tracker (Step 1) - Clickable tabs
+        com.mitimiti.app.presentation.components.WizardProgressBar(
+            currentStep = 1,
+            onStepClick = { step ->
+                when (step) {
+                    0 -> onNavigateToLobby(tableId)
+                    2 -> onNavigateToSummary(tableId)
+                }
+            },
+        )
+
+        Spacer(modifier = Modifier.height(10.dp))
 
         if (state.isClosed) {
-            Card(
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
-                modifier = Modifier.fillMaxWidth(),
+            Box(
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .claymorphic(
+                            backgroundColor = MaterialTheme.colorScheme.errorContainer,
+                            cornerRadius = 16.dp,
+                            elevation = 2.dp,
+                            isDark = isDark,
+                        )
+                        .padding(12.dp),
             ) {
-                Text(
-                    text = "🔒 MESA CERRADA - Modo de Solo Lectura. No se pueden modificar ni eliminar consumos.",
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onErrorContainer,
-                    style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.padding(12.dp),
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.Lock,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp),
+                        tint = MaterialTheme.colorScheme.onErrorContainer,
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = "JUNTADA CERRADA - Modo de Solo Lectura. No se pueden modificar ni eliminar gastos.",
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onErrorContainer,
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.weight(1f),
+                    )
+                }
             }
         } else {
             // Locked OCR Receipt Scanner Option
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors =
-                    CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                    ),
+            Box(
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .claymorphic(
+                            backgroundColor = if (isDark) MaterialTheme.colorScheme.surface else Color.White,
+                            cornerRadius = 20.dp,
+                            elevation = 2.dp,
+                            isDark = isDark,
+                        )
+                        .padding(12.dp),
             ) {
                 Row(
-                    modifier =
-                        Modifier
-                            .padding(12.dp)
-                            .fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
@@ -151,7 +217,12 @@ fun ExpenseScreen(
                         modifier = Modifier.weight(1f),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Text("📷", style = MaterialTheme.typography.titleLarge)
+                        Icon(
+                            imageVector = Icons.Default.Lock,
+                            contentDescription = "Bloqueado",
+                            modifier = Modifier.size(24.dp),
+                            tint = MaterialTheme.colorScheme.primary,
+                        )
                         Spacer(modifier = Modifier.width(10.dp))
                         Column {
                             Text(
@@ -160,102 +231,157 @@ fun ExpenseScreen(
                                 style = MaterialTheme.typography.bodyMedium,
                             )
                             Text(
-                                text = "Carga automática con IA y foto",
+                                text = "Carga automática con foto (Próximamente)",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                             )
                         }
                     }
-                    Text(
-                        text = "🔒 Próximamente",
-                        style = MaterialTheme.typography.labelSmall,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.outline,
-                    )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.Lock,
+                            contentDescription = "Bloqueado",
+                            modifier = Modifier.size(12.dp),
+                            tint = MaterialTheme.colorScheme.outline,
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = "Bloqueado",
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.outline,
+                        )
+                    }
                 }
             }
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            Card(
-                modifier = Modifier.fillMaxWidth(),
+            // Claymorphic Add/Edit Expense Box
+            Box(
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .claymorphic(
+                            backgroundColor = if (isDark) MaterialTheme.colorScheme.surface else Color.White,
+                            cornerRadius = 24.dp,
+                            elevation = 4.dp,
+                            isDark = isDark,
+                        ),
             ) {
                 Column(modifier = Modifier.padding(12.dp)) {
-                    Text(
-                        text = if (editingExpenseId != null) "Editar Producto" else "Añadir Producto",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                    )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = if (editingExpenseId != null) Icons.Default.Edit else Icons.Default.Add,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp),
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = if (editingExpenseId != null) "Editar Gasto" else "Cargar un Gasto",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                        )
+                    }
                     Spacer(modifier = Modifier.height(8.dp))
                     Row(modifier = Modifier.fillMaxWidth()) {
                         OutlinedTextField(
                             value = itemNameInput,
                             onValueChange = { itemNameInput = it },
-                            label = { Text("Ítem (Ej: Pizza, Asado)") },
-                            modifier = Modifier.weight(1.5f),
+                            label = { Text("Gasto (Ej: Vacío, Fernet, Helado...)") },
+                            modifier = Modifier.weight(1.4f),
                             singleLine = true,
+                            shape = RoundedCornerShape(16.dp),
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         OutlinedTextField(
                             value = itemCostInput,
                             onValueChange = { itemCostInput = it },
-                            label = { Text("Costo ($)") },
+                            label = { Text("Precio ($)") },
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                             modifier = Modifier.weight(1f),
                             singleLine = true,
+                            shape = RoundedCornerShape(16.dp),
                         )
                     }
 
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = "Pagado por:",
-                        style = MaterialTheme.typography.bodySmall,
-                        fontWeight = FontWeight.Bold,
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.Person,
+                            contentDescription = null,
+                            modifier = Modifier.size(14.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = "Quién garpó:",
+                            style = MaterialTheme.typography.bodySmall,
+                            fontWeight = FontWeight.Bold,
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(6.dp))
 
                     LazyRow(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
                         items(state.friends) { friend ->
                             val isPayer = selectedPayerId == friend.id
-                            Card(
-                                colors =
-                                    CardDefaults.cardColors(
-                                        containerColor =
-                                            if (isPayer) {
-                                                MaterialTheme.colorScheme.primaryContainer
-                                            } else {
-                                                MaterialTheme.colorScheme.surfaceVariant
-                                            },
-                                    ),
+                            Box(
                                 modifier =
-                                    Modifier.clickable {
-                                        selectedPayerId = friend.id
-                                    },
+                                    Modifier
+                                        .clickable { selectedPayerId = friend.id }
+                                        .claymorphic(
+                                            backgroundColor =
+                                                if (isPayer) {
+                                                    MaterialTheme.colorScheme.primaryContainer
+                                                } else if (isDark) {
+                                                    MaterialTheme.colorScheme.surface
+                                                } else {
+                                                    Color.White
+                                                },
+                                            cornerRadius = 14.dp,
+                                            elevation = if (isPayer) 4.dp else 1.dp,
+                                            isDark = isDark,
+                                        )
+                                        .padding(horizontal = 10.dp, vertical = 6.dp),
                             ) {
                                 Text(
                                     text = friend.name,
-                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
                                     style = MaterialTheme.typography.bodySmall,
                                     fontWeight = if (isPayer) FontWeight.Bold else FontWeight.Normal,
+                                    color =
+                                        if (isPayer) {
+                                            MaterialTheme.colorScheme.onPrimaryContainer
+                                        } else {
+                                            MaterialTheme.colorScheme.onSurface
+                                        },
                                 )
                             }
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Text(
-                            text = "Compartido por:",
-                            style = MaterialTheme.typography.bodySmall,
-                            fontWeight = FontWeight.Bold,
-                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Default.Person,
+                                contentDescription = null,
+                                modifier = Modifier.size(14.dp),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = "Quiénes consumieron:",
+                                style = MaterialTheme.typography.bodySmall,
+                                fontWeight = FontWeight.Bold,
+                            )
+                        }
                         TextButton(
                             onClick = {
                                 if (selectedFriendIds.size == state.friends.size) {
@@ -276,33 +402,38 @@ fun ExpenseScreen(
 
                     LazyRow(
                         modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
                         items(state.friends) { friend ->
                             val isChecked = selectedFriendIds.contains(friend.id)
-                            Card(
-                                colors =
-                                    CardDefaults.cardColors(
-                                        containerColor =
-                                            if (isChecked) {
-                                                MaterialTheme.colorScheme.primaryContainer
-                                            } else {
-                                                MaterialTheme.colorScheme.surfaceVariant
-                                            },
-                                    ),
+                            Box(
                                 modifier =
                                     Modifier
-                                        .padding(horizontal = 4.dp, vertical = 2.dp)
                                         .clickable {
                                             if (isChecked) {
                                                 selectedFriendIds.remove(friend.id)
                                             } else {
                                                 selectedFriendIds.add(friend.id)
                                             }
-                                        },
+                                        }
+                                        .claymorphic(
+                                            backgroundColor =
+                                                if (isChecked) {
+                                                    MaterialTheme.colorScheme.primaryContainer
+                                                } else if (isDark) {
+                                                    MaterialTheme.colorScheme.surface
+                                                } else {
+                                                    Color.White
+                                                },
+                                            cornerRadius = 14.dp,
+                                            elevation = if (isChecked) 4.dp else 1.dp,
+                                            isDark = isDark,
+                                        )
+                                        .padding(horizontal = 8.dp, vertical = 4.dp),
                             ) {
                                 Row(
-                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
                                     verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp),
                                 ) {
                                     Checkbox(
                                         checked = isChecked,
@@ -314,13 +445,22 @@ fun ExpenseScreen(
                                             }
                                         },
                                     )
-                                    Text(text = friend.name, style = MaterialTheme.typography.bodySmall)
+                                    Text(
+                                        text = friend.name,
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color =
+                                            if (isChecked) {
+                                                MaterialTheme.colorScheme.onPrimaryContainer
+                                            } else {
+                                                MaterialTheme.colorScheme.onSurface
+                                            },
+                                    )
                                 }
                             }
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
 
                     val isCostValid = itemCostInput.toDoubleOrNull() != null
                     val isValidForm =
@@ -348,11 +488,11 @@ fun ExpenseScreen(
                                 },
                                 modifier = Modifier.padding(end = 8.dp),
                             ) {
-                                Text("Cancelar")
+                                Text("Cancelar", color = MaterialTheme.colorScheme.error)
                             }
                         }
 
-                        Button(
+                        ClayButton(
                             onClick = {
                                 val cost = itemCostInput.toDoubleOrNull() ?: 0.0
                                 if (isValidForm) {
@@ -381,8 +521,20 @@ fun ExpenseScreen(
                                 }
                             },
                             enabled = isValidForm,
+                            cornerRadius = 16.dp,
                         ) {
-                            Text(if (editingExpenseId != null) "Guardar Cambios" else "Añadir Gasto")
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    imageVector = if (editingExpenseId != null) Icons.Default.Check else Icons.Default.Add,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(16.dp),
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = if (editingExpenseId != null) "Guardar Gasto" else "Sumar Gasto",
+                                    fontWeight = FontWeight.Bold,
+                                )
+                            }
                         }
                     }
                 }
@@ -391,31 +543,44 @@ fun ExpenseScreen(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        Text(
-            text = "Ítems Registrados:",
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold,
-        )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(
+                imageVector = Icons.Default.List,
+                contentDescription = null,
+                modifier = Modifier.size(18.dp),
+            )
+            Spacer(modifier = Modifier.width(4.dp))
+            Text(
+                text = "Detalle de los Gastos",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+            )
+        }
         Spacer(modifier = Modifier.height(4.dp))
 
+        // Claymorphic Expense Items List
         LazyColumn(
             modifier =
                 Modifier
                     .weight(1f)
                     .fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             items(state.expenses) { item ->
-                Card(
+                Box(
                     modifier =
                         Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 4.dp),
+                            .claymorphic(
+                                backgroundColor = if (isDark) MaterialTheme.colorScheme.surface else Color.White,
+                                cornerRadius = 20.dp,
+                                elevation = 3.dp,
+                                isDark = isDark,
+                            )
+                            .padding(12.dp),
                 ) {
                     Row(
-                        modifier =
-                            Modifier
-                                .padding(12.dp)
-                                .fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Column(modifier = Modifier.weight(1f)) {
@@ -429,17 +594,17 @@ fun ExpenseScreen(
                                     .find { it.id == item.paidByFriendId }?.name ?: "Desconocido"
                             Text(
                                 text =
-                                    "Pagado por: $payerName | " +
-                                        "Compartido por ${item.sharedByFriendIds.size} pers.",
+                                    "Garpó: $payerName | " +
+                                        "Se divide entre ${item.sharedByFriendIds.size} amigos",
                                 style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.secondary,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
                         }
                         Text(
                             text = "$${item.cost}",
                             style = MaterialTheme.typography.titleMedium,
                             color = MaterialTheme.colorScheme.primary,
-                            fontWeight = FontWeight.Bold,
+                            fontWeight = FontWeight.Black,
                         )
                         if (!state.isClosed) {
                             Spacer(modifier = Modifier.width(8.dp))
@@ -456,7 +621,7 @@ fun ExpenseScreen(
                                 Icon(
                                     imageVector = Icons.Default.Edit,
                                     contentDescription = "Editar gasto",
-                                    tint = MaterialTheme.colorScheme.secondary,
+                                    tint = MaterialTheme.colorScheme.primary,
                                 )
                             }
                             IconButton(
@@ -485,9 +650,17 @@ fun ExpenseScreen(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        if (state.type == TableType.RESTAURANT) {
-            Card(
-                modifier = Modifier.fillMaxWidth(),
+        if (state.type == TableType.RESTAURANT && !state.isClosed) {
+            Box(
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .claymorphic(
+                            backgroundColor = if (isDark) MaterialTheme.colorScheme.surface else Color.White,
+                            cornerRadius = 20.dp,
+                            elevation = 2.dp,
+                            isDark = isDark,
+                        ),
             ) {
                 Row(
                     modifier =
@@ -507,7 +680,7 @@ fun ExpenseScreen(
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         modifier = Modifier.weight(1f),
                         singleLine = true,
-                        enabled = !state.isClosed,
+                        shape = RoundedCornerShape(16.dp),
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                     OutlinedTextField(
@@ -522,19 +695,33 @@ fun ExpenseScreen(
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         modifier = Modifier.weight(1f),
                         singleLine = true,
-                        enabled = !state.isClosed,
+                        shape = RoundedCornerShape(16.dp),
                     )
                 }
             }
             Spacer(modifier = Modifier.height(12.dp))
         }
 
-        Button(
+        ClayButton(
             onClick = { onNavigateToSummary(state.tableId) },
             modifier = Modifier.fillMaxWidth(),
             enabled = state.expenses.isNotEmpty(),
         ) {
-            Text(if (state.isClosed) "Ver Cuenta Final" else "Ir a Cierre y Cuenta")
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center,
+            ) {
+                Text(
+                    text = if (state.isClosed) "Ver Cuenta Final" else "Ir a Cerrar la Cuenta",
+                    fontWeight = FontWeight.Bold,
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Icon(
+                    imageVector = Icons.Default.ArrowForward,
+                    contentDescription = null,
+                    modifier = Modifier.size(16.dp),
+                )
+            }
         }
     }
 }
