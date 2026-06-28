@@ -463,7 +463,12 @@ fun ExpenseScreen(
                         ) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Icon(
-                                    imageVector = if (editingExpenseId != null) Icons.Default.Check else Icons.Default.Add,
+                                    imageVector =
+                                        if (editingExpenseId != null) {
+                                            Icons.Default.Check
+                                        } else {
+                                            Icons.Default.Add
+                                        },
                                     contentDescription = null,
                                     modifier = Modifier.size(16.dp),
                                 )

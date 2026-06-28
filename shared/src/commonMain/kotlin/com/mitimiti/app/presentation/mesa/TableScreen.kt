@@ -105,7 +105,12 @@ fun TableScreen(
                     horizontalArrangement = Arrangement.Center,
                 ) {
                     Icon(
-                        imageVector = if (state.type == TableType.RESTAURANT) Icons.Default.ShoppingCart else Icons.Default.Home,
+                        imageVector =
+                            if (state.type == TableType.RESTAURANT) {
+                                Icons.Default.ShoppingCart
+                            } else {
+                                Icons.Default.Home
+                            },
                         contentDescription = null,
                         modifier = Modifier.size(16.dp),
                         tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
