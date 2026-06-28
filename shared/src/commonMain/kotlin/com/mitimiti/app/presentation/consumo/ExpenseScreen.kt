@@ -99,70 +99,8 @@ fun ExpenseScreen(
     }
 
     Column(
-        modifier =
-            modifier
-                .fillMaxSize()
-                .safeDrawingPadding()
-                .padding(16.dp),
+        modifier = modifier.fillMaxSize(),
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Start,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            TextButton(onClick = onBack) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.Default.ArrowBack,
-                        contentDescription = "Atrás",
-                        modifier = Modifier.size(16.dp),
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text("Volver a la Juntada")
-                }
-            }
-        }
-        Spacer(modifier = Modifier.height(4.dp))
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(
-                text = "Juntada: ${state.tableName}",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.secondary,
-            )
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    imageVector = if (state.type == TableType.RESTAURANT) Icons.Default.ShoppingCart else Icons.Default.Home,
-                    contentDescription = null,
-                    modifier = Modifier.size(14.dp),
-                    tint = MaterialTheme.colorScheme.primary,
-                )
-                Spacer(modifier = Modifier.width(4.dp))
-                Text(
-                    text = if (state.type == TableType.RESTAURANT) "Restaurante" else "Asado / Casa",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.primary,
-                )
-            }
-        }
-
-        // Wizard Progress Tracker (Step 1) - Clickable tabs
-        com.mitimiti.app.presentation.components.WizardProgressBar(
-            currentStep = 1,
-            onStepClick = { step ->
-                when (step) {
-                    0 -> onNavigateToLobby(tableId)
-                    2 -> onNavigateToSummary(tableId)
-                }
-            },
-        )
-
-        Spacer(modifier = Modifier.height(10.dp))
 
         if (state.isClosed) {
             Box(

@@ -100,7 +100,7 @@ fun FriendsScreen(
                         value = newFriendName,
                         onValueChange = { newFriendName = it },
                         label = { Text("Nombre / Apodo") },
-                        modifier = Modifier.weight(1.3f),
+                        modifier = Modifier.weight(1f),
                         singleLine = true,
                         shape = RoundedCornerShape(16.dp),
                     )
@@ -110,22 +110,14 @@ fun FriendsScreen(
                             onAddFriend(newFriendName)
                             newFriendName = ""
                         },
-                        modifier = Modifier.weight(0.7f),
                         enabled = newFriendName.isNotBlank(),
                         cornerRadius = 16.dp,
                     ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center,
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Add,
-                                contentDescription = null,
-                                modifier = Modifier.size(16.dp),
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text("Guardar", fontWeight = FontWeight.Bold)
-                        }
+                        Text(
+                            text = "Guardar",
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(horizontal = 8.dp)
+                        )
                     }
                 }
             }

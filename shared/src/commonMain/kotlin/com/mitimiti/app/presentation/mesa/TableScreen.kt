@@ -74,50 +74,9 @@ fun TableScreen(
     }
 
     Column(
-        modifier =
-            modifier
-                .fillMaxSize()
-                .safeDrawingPadding()
-                .padding(16.dp),
+        modifier = modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        // Top Header
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            TextButton(onClick = onBack) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.Default.ArrowBack,
-                        contentDescription = "Atrás",
-                        modifier = Modifier.size(16.dp),
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text("Mis Juntadas")
-                }
-            }
-            Text(
-                text = "Lobby de la Juntada",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-            )
-        }
-
-        // Wizard Progress Tracker (Step 0) - Clickable tabs
-        com.mitimiti.app.presentation.components.WizardProgressBar(
-            currentStep = 0,
-            onStepClick = { step ->
-                when (step) {
-                    1 -> onNavigateToExpenses(tableId)
-                    2 -> onNavigateToSummary(tableId)
-                }
-            },
-        )
-
-        Spacer(modifier = Modifier.height(10.dp))
-
         // Claymorphic Juntada Detail Card
         Box(
             modifier =

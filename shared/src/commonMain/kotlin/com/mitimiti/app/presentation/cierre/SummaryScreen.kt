@@ -77,53 +77,8 @@ fun SummaryScreen(
     }
 
     Column(
-        modifier =
-            modifier
-                .fillMaxSize()
-                .safeDrawingPadding()
-                .padding(16.dp),
+        modifier = modifier.fillMaxSize(),
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Start,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            TextButton(
-                onClick = onBack,
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.Default.ArrowBack,
-                        contentDescription = "Atrás",
-                        modifier = Modifier.size(16.dp),
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text("Volver a Cargar Gastos")
-                }
-            }
-        }
-        Spacer(modifier = Modifier.height(4.dp))
-
-        Text(
-            text = "Resumen de la Vaquita",
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Black,
-            color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.align(Alignment.CenterHorizontally),
-        )
-
-        // Wizard Progress Tracker (Step 2) - Clickable tabs
-        WizardProgressBar(
-            currentStep = 2,
-            onStepClick = { step ->
-                when (step) {
-                    0 -> onNavigateToLobby(tableId)
-                    1 -> onNavigateToExpenses(tableId)
-                }
-            },
-        )
-
-        Spacer(modifier = Modifier.height(10.dp))
 
         // Split Strategy Toggle Selector
         if (state.isClosed) {

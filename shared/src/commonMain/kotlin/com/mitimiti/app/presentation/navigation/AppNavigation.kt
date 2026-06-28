@@ -31,6 +31,7 @@ import com.mitimiti.app.presentation.mesa.TableListScreen
 import com.mitimiti.app.presentation.mesa.TableScreen
 import com.mitimiti.app.presentation.mesa.TableViewModel
 import com.mitimiti.app.presentation.mesa.MainHubScreen
+import com.mitimiti.app.presentation.mesa.ActiveTableHubScreen
 
 @Composable
 @Suppress("FunctionNaming")
@@ -136,75 +137,13 @@ fun AppNavigation(
             arguments = listOf(navArgument("tableId") { type = NavType.StringType }),
         ) { backStackEntry ->
             val tableId = backStackEntry.arguments?.getString("tableId") ?: ""
-            TableScreen(
+            ActiveTableHubScreen(
                 tableId = tableId,
-                viewModel = tableViewModel,
-                onNavigateToExpenses = { id ->
-                    navController.navigate("expense/$id") {
-                        launchSingleTop = true
-                    }
-                },
-                onNavigateToSummary = { id ->
-                    navController.navigate("summary/$id") {
-                        launchSingleTop = true
-                    }
-                },
+                tableViewModel = tableViewModel,
+                expenseViewModel = expenseViewModel,
+                summaryViewModel = summaryViewModel,
                 onBack = {
                     tableViewModel.resetTableState()
-                    navController.popBackStack()
-                },
-                modifier = Modifier,
-            )
-        }
-        composable(
-            route = "expense/{tableId}",
-            arguments = listOf(navArgument("tableId") { type = NavType.StringType }),
-        ) { backStackEntry ->
-            val tableId = backStackEntry.arguments?.getString("tableId") ?: ""
-            ExpenseScreen(
-                tableId = tableId,
-                viewModel = expenseViewModel,
-                onNavigateToLobby = { id ->
-                    navController.navigate("table_lobby/$id") {
-                        launchSingleTop = true
-                    }
-                },
-                onNavigateToSummary = { id ->
-                    navController.navigate("summary/$id") {
-                        launchSingleTop = true
-                    }
-                },
-                onBack = {
-                    navController.popBackStack()
-                },
-                modifier = Modifier,
-            )
-        }
-        composable(
-            route = "summary/{tableId}",
-            arguments = listOf(navArgument("tableId") { type = NavType.StringType }),
-        ) { backStackEntry ->
-            val tableId = backStackEntry.arguments?.getString("tableId") ?: ""
-            SummaryScreen(
-                tableId = tableId,
-                viewModel = summaryViewModel,
-                onNavigateToLobby = { id ->
-                    navController.navigate("table_lobby/$id") {
-                        launchSingleTop = true
-                    }
-                },
-                onNavigateToExpenses = { id ->
-                    navController.navigate("expense/$id") {
-                        launchSingleTop = true
-                    }
-                },
-                onRestart = {
-                    tableViewModel.resetTableState()
-                    navController.navigate("main_hub") {
-                        popUpTo("main_hub") { inclusive = true }
-                    }
-                },
-                onBack = {
                     navController.popBackStack()
                 },
                 modifier = Modifier,
