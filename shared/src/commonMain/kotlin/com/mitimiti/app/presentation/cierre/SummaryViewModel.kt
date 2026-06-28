@@ -3,6 +3,7 @@ package com.mitimiti.app.presentation.cierre
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mitimiti.app.domain.model.SplitType
+import com.mitimiti.app.domain.model.TableType
 import com.mitimiti.app.domain.repository.TableRepository
 import com.mitimiti.app.domain.usecase.CalculateSplitExpensesUseCase
 import com.mitimiti.app.domain.usecase.TableBillSummary
@@ -22,6 +23,10 @@ data class SummaryUiState(
     val isCopied: Boolean = false,
     val isLoading: Boolean = false,
     val error: String? = null,
+    val tipPercentage: Double = 10.0,
+    val fixedExtraCost: Double = 0.0,
+    val cubiertoPerPerson: Double = 0.0,
+    val tableType: TableType = TableType.RESTAURANT,
 )
 
 class SummaryViewModel(
@@ -56,6 +61,10 @@ class SummaryViewModel(
                                 formattedShareText = shareText,
                                 isClosed = table.isClosed,
                                 isLoading = false,
+                                tipPercentage = table.tipPercentage,
+                                fixedExtraCost = table.fixedExtraCost,
+                                cubiertoPerPerson = table.cubiertoPerPerson,
+                                tableType = table.type,
                             )
                         }
                     }
@@ -71,6 +80,28 @@ class SummaryViewModel(
             val table = tableRepository.getTable(tableId)
             if (table != null && !table.isClosed) {
                 tableRepository.saveTable(table.copy(splitType = splitType))
+            }
+        }
+    }
+
+    fun updateTipAndExtra(
+        tipPercentage: Double,
+        fixedExtraCost: Double,
+        cubiertoPerPerson: Double,
+    ) {
+        val tableId = _uiState.value.tableId
+        if (tableId.isEmpty()) return
+
+        viewModelScope.launch {
+            val table = tableRepository.getTable(tableId)
+            if (table != null && !table.isClosed) {
+                tableRepository.saveTable(
+                    table.copy(
+                        tipPercentage = tipPercentage,
+                        fixedExtraCost = fixedExtraCost,
+                        cubiertoPerPerson = cubiertoPerPerson,
+                    ),
+                )
             }
         }
     }
@@ -96,7 +127,7 @@ class SummaryViewModel(
         summary: TableBillSummary,
     ): String {
         return buildString {
-            appendLine("🍽️ MitiMiti - Resumen de Cuenta: $tableName 🍽️")
+            appendLine("Miti y Miti - Resumen de la Vaquita: $tableName")
             appendLine("---------------------------------")
             summary.friendBills.forEach { bill ->
                 val balanceStr =
@@ -105,26 +136,26 @@ class SummaryViewModel(
                     } else {
                         "debe $${(-bill.balance).format(2)}"
                     }
-                appendLine("👤 ${bill.friendName}:")
-                appendLine("   Pagó: $${bill.amountPaid.format(2)}")
+                appendLine("- ${bill.friendName}:")
+                appendLine("   Garpó: $${bill.amountPaid.format(2)}")
                 appendLine("   Consume: $${bill.total.format(2)}")
                 appendLine("   Saldo: $balanceStr")
                 appendLine()
             }
             appendLine("---------------------------------")
             if (summary.transactions.isNotEmpty()) {
-                appendLine("💸 Transferencias para saldar:")
+                appendLine("Transferencias para saldar:")
                 summary.transactions.forEach { tx ->
-                    appendLine("👉 ${tx.fromFriendName} le paga $${tx.amount.format(2)} a ${tx.toFriendName}")
+                    appendLine("  * ${tx.fromFriendName} le transfiere $${tx.amount.format(2)} a ${tx.toFriendName}")
                 }
             } else {
-                appendLine("✅ ¡Todos saldados! Sin transferencias.")
+                appendLine("¡Quedaron a mano! No hay deudas.")
             }
             appendLine("---------------------------------")
-            appendLine("🧾 Subtotal: $${summary.subtotal.format(2)}")
-            appendLine("💰 Propina Total: $${summary.totalTip.format(2)}")
-            appendLine("⚡ Extras/Cubiertos: $${summary.totalExtra.format(2)}")
-            appendLine("💵 Total a Pagar: $${summary.total.format(2)}")
+            appendLine("Subtotal: $${summary.subtotal.format(2)}")
+            appendLine("Propina del Mozo: $${summary.totalTip.format(2)}")
+            appendLine("Extras/Cubiertos: $${summary.totalExtra.format(2)}")
+            appendLine("Total de la Vaquita: $${summary.total.format(2)}")
         }
     }
 

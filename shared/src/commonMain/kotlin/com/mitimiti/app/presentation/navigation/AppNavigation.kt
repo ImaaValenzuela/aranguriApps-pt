@@ -138,7 +138,14 @@ fun AppNavigation(
                 tableId = tableId,
                 viewModel = tableViewModel,
                 onNavigateToExpenses = { id ->
-                    navController.navigate("expense/$id")
+                    navController.navigate("expense/$id") {
+                        launchSingleTop = true
+                    }
+                },
+                onNavigateToSummary = { id ->
+                    navController.navigate("summary/$id") {
+                        launchSingleTop = true
+                    }
                 },
                 onBack = {
                     tableViewModel.resetTableState()
@@ -155,8 +162,15 @@ fun AppNavigation(
             ExpenseScreen(
                 tableId = tableId,
                 viewModel = expenseViewModel,
+                onNavigateToLobby = { id ->
+                    navController.navigate("table_lobby/$id") {
+                        launchSingleTop = true
+                    }
+                },
                 onNavigateToSummary = { id ->
-                    navController.navigate("summary/$id")
+                    navController.navigate("summary/$id") {
+                        launchSingleTop = true
+                    }
                 },
                 onBack = {
                     navController.popBackStack()
@@ -172,6 +186,16 @@ fun AppNavigation(
             SummaryScreen(
                 tableId = tableId,
                 viewModel = summaryViewModel,
+                onNavigateToLobby = { id ->
+                    navController.navigate("table_lobby/$id") {
+                        launchSingleTop = true
+                    }
+                },
+                onNavigateToExpenses = { id ->
+                    navController.navigate("expense/$id") {
+                        launchSingleTop = true
+                    }
+                },
                 onRestart = {
                     tableViewModel.resetTableState()
                     navController.navigate("table_list") {
