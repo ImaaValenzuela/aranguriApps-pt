@@ -137,7 +137,12 @@ fun ExpenseScreen(
             )
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
-                    imageVector = if (state.type == TableType.RESTAURANT) Icons.Default.ShoppingCart else Icons.Default.Home,
+                    imageVector =
+                        if (state.type == TableType.RESTAURANT) {
+                            Icons.Default.ShoppingCart
+                        } else {
+                            Icons.Default.Home
+                        },
                     contentDescription = null,
                     modifier = Modifier.size(14.dp),
                     tint = MaterialTheme.colorScheme.primary,
@@ -525,7 +530,12 @@ fun ExpenseScreen(
                         ) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Icon(
-                                    imageVector = if (editingExpenseId != null) Icons.Default.Check else Icons.Default.Add,
+                                    imageVector =
+                                        if (editingExpenseId != null) {
+                                            Icons.Default.Check
+                                        } else {
+                                            Icons.Default.Add
+                                        },
                                     contentDescription = null,
                                     modifier = Modifier.size(16.dp),
                                 )

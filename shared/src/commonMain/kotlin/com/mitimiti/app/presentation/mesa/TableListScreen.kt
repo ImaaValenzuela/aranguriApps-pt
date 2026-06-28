@@ -567,7 +567,12 @@ private fun TableHistoryCard(
                 modifier = Modifier.weight(1f),
             ) {
                 Icon(
-                    imageVector = if (table.type == TableType.RESTAURANT) Icons.Default.ShoppingCart else Icons.Default.Home,
+                    imageVector =
+                        if (table.type == TableType.RESTAURANT) {
+                            Icons.Default.ShoppingCart
+                        } else {
+                            Icons.Default.Home
+                        },
                     contentDescription = null,
                     modifier = Modifier.size(24.dp),
                     tint = MaterialTheme.colorScheme.primary,
