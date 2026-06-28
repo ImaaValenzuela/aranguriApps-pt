@@ -15,10 +15,15 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -53,6 +58,7 @@ fun ExpenseScreen(
     var itemCostInput by remember { mutableStateOf("") }
     val selectedFriendIds = remember { mutableStateListOf<String>() }
     var selectedPayerId by remember { mutableStateOf("") }
+    var editingExpenseId by remember { mutableStateOf<String?>(null) }
 
     var tipInput by remember { mutableStateOf("10") }
     var extraInput by remember { mutableStateOf("0") }
@@ -176,7 +182,7 @@ fun ExpenseScreen(
             ) {
                 Column(modifier = Modifier.padding(12.dp)) {
                     Text(
-                        text = "Añadir Producto",
+                        text = if (editingExpenseId != null) "Editar Producto" else "Añadir Producto",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                     )
@@ -317,36 +323,67 @@ fun ExpenseScreen(
                     Spacer(modifier = Modifier.height(8.dp))
 
                     val isCostValid = itemCostInput.toDoubleOrNull() != null
-                    Button(
-                        onClick = {
-                            val cost = itemCostInput.toDoubleOrNull() ?: 0.0
-                            val isValidForm =
-                                itemNameInput.isNotEmpty() &&
-                                    cost > 0 &&
-                                    selectedFriendIds.isNotEmpty() &&
-                                    selectedPayerId.isNotEmpty()
-                            if (isValidForm) {
-                                viewModel.addExpenseItem(
-                                    name = itemNameInput,
-                                    cost = cost,
-                                    sharedByFriendIds = selectedFriendIds.toList(),
-                                    paidByFriendId = selectedPayerId,
-                                )
-                                itemNameInput = ""
-                                itemCostInput = ""
-                                // Keep payer same, but reset sharers to all
-                                selectedFriendIds.clear()
-                                selectedFriendIds.addAll(state.friends.map { it.id })
-                            }
-                        },
-                        modifier = Modifier.align(Alignment.End),
-                        enabled =
-                            itemNameInput.isNotEmpty() &&
-                                isCostValid &&
-                                selectedFriendIds.isNotEmpty() &&
-                                selectedPayerId.isNotEmpty(),
+                    val isValidForm =
+                        itemNameInput.isNotEmpty() &&
+                            isCostValid &&
+                            selectedFriendIds.isNotEmpty() &&
+                            selectedPayerId.isNotEmpty()
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End,
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Text("Añadir Gasto")
+                        if (editingExpenseId != null) {
+                            TextButton(
+                                onClick = {
+                                    editingExpenseId = null
+                                    itemNameInput = ""
+                                    itemCostInput = ""
+                                    selectedFriendIds.clear()
+                                    selectedFriendIds.addAll(state.friends.map { it.id })
+                                    if (state.friends.isNotEmpty()) {
+                                        selectedPayerId = state.friends.first().id
+                                    }
+                                },
+                                modifier = Modifier.padding(end = 8.dp),
+                            ) {
+                                Text("Cancelar")
+                            }
+                        }
+
+                        Button(
+                            onClick = {
+                                val cost = itemCostInput.toDoubleOrNull() ?: 0.0
+                                if (isValidForm) {
+                                    val currentEditingId = editingExpenseId
+                                    if (currentEditingId != null) {
+                                        viewModel.updateExpenseItem(
+                                            id = currentEditingId,
+                                            name = itemNameInput,
+                                            cost = cost,
+                                            sharedByFriendIds = selectedFriendIds.toList(),
+                                            paidByFriendId = selectedPayerId,
+                                        )
+                                        editingExpenseId = null
+                                    } else {
+                                        viewModel.addExpenseItem(
+                                            name = itemNameInput,
+                                            cost = cost,
+                                            sharedByFriendIds = selectedFriendIds.toList(),
+                                            paidByFriendId = selectedPayerId,
+                                        )
+                                    }
+                                    itemNameInput = ""
+                                    itemCostInput = ""
+                                    selectedFriendIds.clear()
+                                    selectedFriendIds.addAll(state.friends.map { it.id })
+                                }
+                            },
+                            enabled = isValidForm,
+                        ) {
+                            Text(if (editingExpenseId != null) "Guardar Cambios" else "Añadir Gasto")
+                        }
                     }
                 }
             }
@@ -404,6 +441,43 @@ fun ExpenseScreen(
                             color = MaterialTheme.colorScheme.primary,
                             fontWeight = FontWeight.Bold,
                         )
+                        if (!state.isClosed) {
+                            Spacer(modifier = Modifier.width(8.dp))
+                            IconButton(
+                                onClick = {
+                                    editingExpenseId = item.id
+                                    itemNameInput = item.name
+                                    itemCostInput = item.cost.toString()
+                                    selectedPayerId = item.paidByFriendId
+                                    selectedFriendIds.clear()
+                                    selectedFriendIds.addAll(item.sharedByFriendIds)
+                                },
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Edit,
+                                    contentDescription = "Editar gasto",
+                                    tint = MaterialTheme.colorScheme.secondary,
+                                )
+                            }
+                            IconButton(
+                                onClick = {
+                                    if (editingExpenseId == item.id) {
+                                        editingExpenseId = null
+                                        itemNameInput = ""
+                                        itemCostInput = ""
+                                        selectedFriendIds.clear()
+                                        selectedFriendIds.addAll(state.friends.map { it.id })
+                                    }
+                                    viewModel.deleteExpenseItem(item.id)
+                                },
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Delete,
+                                    contentDescription = "Eliminar gasto",
+                                    tint = MaterialTheme.colorScheme.error,
+                                )
+                            }
+                        }
                     }
                 }
             }

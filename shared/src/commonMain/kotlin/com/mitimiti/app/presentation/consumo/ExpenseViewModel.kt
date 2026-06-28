@@ -96,6 +96,50 @@ class ExpenseViewModel(
         }
     }
 
+    fun deleteExpenseItem(itemId: String) {
+        val state = _uiState.value
+        if (state.isClosed) return
+        val tableId = state.tableId
+        if (tableId.isEmpty()) return
+
+        viewModelScope.launch {
+            val updatedExpenses = state.expenses.filter { it.id != itemId }
+            _uiState.update { it.copy(expenses = updatedExpenses) }
+            updateTableInRepository()
+        }
+    }
+
+    fun updateExpenseItem(
+        id: String,
+        name: String,
+        cost: Double,
+        sharedByFriendIds: List<String>,
+        paidByFriendId: String,
+    ) {
+        val state = _uiState.value
+        if (state.isClosed) return
+        val tableId = state.tableId
+        if (tableId.isEmpty() || name.trim().isEmpty() || cost <= 0 || paidByFriendId.isEmpty()) return
+
+        viewModelScope.launch {
+            val updatedExpenses =
+                state.expenses.map {
+                    if (it.id == id) {
+                        it.copy(
+                            name = name,
+                            cost = cost,
+                            sharedByFriendIds = sharedByFriendIds,
+                            paidByFriendId = paidByFriendId,
+                        )
+                    } else {
+                        it
+                    }
+                }
+            _uiState.update { it.copy(expenses = updatedExpenses) }
+            updateTableInRepository()
+        }
+    }
+
     fun updateTipAndExtra(
         tipPercentage: Double,
         fixedExtraCost: Double,
