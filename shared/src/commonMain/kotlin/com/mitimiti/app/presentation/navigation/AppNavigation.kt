@@ -30,6 +30,7 @@ import com.mitimiti.app.presentation.consumo.ExpenseViewModel
 import com.mitimiti.app.presentation.mesa.TableListScreen
 import com.mitimiti.app.presentation.mesa.TableScreen
 import com.mitimiti.app.presentation.mesa.TableViewModel
+import com.mitimiti.app.presentation.mesa.MainHubScreen
 
 @Composable
 @Suppress("FunctionNaming")
@@ -71,7 +72,7 @@ fun AppNavigation(
     // Monitor authentication state and adjust navigation
     LaunchedEffect(authState.isAuthenticated) {
         if (authState.isAuthenticated) {
-            navController.navigate("table_list") {
+            navController.navigate("main_hub") {
                 popUpTo(0) { inclusive = true }
             }
         } else {
@@ -83,7 +84,7 @@ fun AppNavigation(
 
     val startDestination =
         remember {
-            if (authState.isAuthenticated) "table_list" else "login"
+            if (authState.isAuthenticated) "main_hub" else "login"
         }
 
     NavHost(
@@ -116,9 +117,10 @@ fun AppNavigation(
                 modifier = Modifier,
             )
         }
-        composable("table_list") {
-            TableListScreen(
+        composable("main_hub") {
+            MainHubScreen(
                 viewModel = tableViewModel,
+                userEmail = authState.user?.email,
                 onNavigateToLobby = { tableId ->
                     navController.navigate("table_lobby/$tableId")
                 },
@@ -198,8 +200,8 @@ fun AppNavigation(
                 },
                 onRestart = {
                     tableViewModel.resetTableState()
-                    navController.navigate("table_list") {
-                        popUpTo("table_list") { inclusive = true }
+                    navController.navigate("main_hub") {
+                        popUpTo("main_hub") { inclusive = true }
                     }
                 },
                 onBack = {
