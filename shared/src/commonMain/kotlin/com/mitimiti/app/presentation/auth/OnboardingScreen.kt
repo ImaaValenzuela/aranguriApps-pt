@@ -129,21 +129,22 @@ fun OnboardingScreen(
                                 style = MaterialTheme.typography.bodyLarge,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.padding(start = 12.dp, end = 4.dp)
+                                modifier = Modifier.padding(start = 12.dp, end = 4.dp),
                             )
                         },
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true,
                         shape = RoundedCornerShape(16.dp),
-                        keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Text,
-                            imeAction = ImeAction.Next
-                        )
+                        keyboardOptions =
+                            KeyboardOptions(
+                                keyboardType = KeyboardType.Text,
+                                imeAction = ImeAction.Next,
+                            ),
                     )
                     Text(
                         text = "Con este nombre de usuario te agregarán tus amigos.",
                         style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                     )
                 }
 
@@ -159,10 +160,11 @@ fun OnboardingScreen(
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
                     shape = RoundedCornerShape(16.dp),
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Text,
-                        imeAction = ImeAction.Next
-                    )
+                    keyboardOptions =
+                        KeyboardOptions(
+                            keyboardType = KeyboardType.Text,
+                            imeAction = ImeAction.Next,
+                        ),
                 )
 
                 // CBU field
@@ -180,15 +182,23 @@ fun OnboardingScreen(
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true,
                         shape = RoundedCornerShape(16.dp),
-                        keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Number,
-                            imeAction = ImeAction.Done
-                        )
+                        keyboardOptions =
+                            KeyboardOptions(
+                                keyboardType = KeyboardType.Number,
+                                imeAction = ImeAction.Done,
+                            ),
                     )
                     Text(
                         text = "Debe tener exactamente 22 números.",
                         style = MaterialTheme.typography.labelSmall,
-                        color = if (cbu.isNotEmpty() && cbu.length != 22) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                        color =
+                            if (cbu.isNotEmpty() && cbu.length != 22) {
+                                MaterialTheme.colorScheme.error
+                            } else {
+                                MaterialTheme.colorScheme.onSurfaceVariant.copy(
+                                    alpha = 0.7f,
+                                )
+                            },
                     )
                 }
 
@@ -199,7 +209,7 @@ fun OnboardingScreen(
                         color = MaterialTheme.colorScheme.error,
                         style = MaterialTheme.typography.bodySmall,
                         fontWeight = FontWeight.Bold,
-                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                        modifier = Modifier.align(Alignment.CenterHorizontally),
                     )
                 }
 
@@ -218,7 +228,7 @@ fun OnboardingScreen(
                             onSuccess = {},
                             onError = { errorMsg ->
                                 localError = errorMsg
-                            }
+                            },
                         )
                     },
                     modifier = Modifier.fillMaxWidth(),

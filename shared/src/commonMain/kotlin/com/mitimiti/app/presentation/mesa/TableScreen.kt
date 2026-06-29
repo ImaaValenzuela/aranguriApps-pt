@@ -1,5 +1,6 @@
 package com.mitimiti.app.presentation.mesa
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -13,8 +14,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -299,7 +298,7 @@ fun TableScreen(
                                             } else {
                                                 errorMessage = error
                                             }
-                                        }
+                                        },
                                     )
                                 } else {
                                     viewModel.addFriend(input)
@@ -321,7 +320,7 @@ fun TableScreen(
                             color = MaterialTheme.colorScheme.error,
                             style = MaterialTheme.typography.bodySmall,
                             fontWeight = FontWeight.Bold,
-                            modifier = Modifier.padding(top = 4.dp)
+                            modifier = Modifier.padding(top = 4.dp),
                         )
                     }
 
@@ -336,36 +335,50 @@ fun TableScreen(
                         Spacer(modifier = Modifier.height(6.dp))
                         LazyRow(
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier.fillMaxWidth(),
                         ) {
                             items(frequentFriends) { friend ->
-                                val alreadyInTable = state.friends.any { it.name.equals(friend.username, ignoreCase = true) }
-                                Box(
-                                    modifier = Modifier
-                                        .claymorphic(
-                                            backgroundColor = if (alreadyInTable) MaterialTheme.colorScheme.primaryContainer else if (isDark) MaterialTheme.colorScheme.surfaceVariant else Color(0xFFF5F5F5),
-                                            cornerRadius = 12.dp,
-                                            elevation = 1.dp,
-                                            isDark = isDark
+                                val alreadyInTable =
+                                    state.friends.any {
+                                        it.name.equals(
+                                            friend.username,
+                                            ignoreCase = true,
                                         )
-                                        .clickable(enabled = !alreadyInTable) {
-                                            viewModel.addFrequentFriendToTable(friend)
-                                        }
-                                        .padding(horizontal = 10.dp, vertical = 6.dp)
+                                    }
+                                Box(
+                                    modifier =
+                                        Modifier
+                                            .claymorphic(
+                                                backgroundColor =
+                                                    if (alreadyInTable) {
+                                                        MaterialTheme.colorScheme.primaryContainer
+                                                    } else if (isDark) {
+                                                        MaterialTheme.colorScheme.surfaceVariant
+                                                    } else {
+                                                        Color(0xFFF5F5F5)
+                                                    },
+                                                cornerRadius = 12.dp,
+                                                elevation = 1.dp,
+                                                isDark = isDark,
+                                            )
+                                            .clickable(enabled = !alreadyInTable) {
+                                                viewModel.addFrequentFriendToTable(friend)
+                                            }
+                                            .padding(horizontal = 10.dp, vertical = 6.dp),
                                 ) {
                                     Row(verticalAlignment = Alignment.CenterVertically) {
                                         Icon(
                                             imageVector = Icons.Default.Person,
                                             contentDescription = null,
                                             modifier = Modifier.size(14.dp),
-                                            tint = if (alreadyInTable) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                                            tint = if (alreadyInTable) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                                         )
                                         Spacer(modifier = Modifier.width(4.dp))
                                         Text(
                                             text = "@${friend.username}",
                                             style = MaterialTheme.typography.labelLarge,
                                             fontWeight = FontWeight.SemiBold,
-                                            color = if (alreadyInTable) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface
+                                            color = if (alreadyInTable) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface,
                                         )
                                     }
                                 }

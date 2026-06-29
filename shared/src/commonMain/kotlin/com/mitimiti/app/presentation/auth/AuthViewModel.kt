@@ -46,22 +46,24 @@ class AuthViewModel(
 
                 profileJob?.cancel()
                 if (user != null) {
-                    profileJob = launch {
-                        tableRepository.observeUserProfile(user.uid).collect { profile ->
-                            val onboarded = profile != null &&
-                                            profile.username.isNotBlank() &&
-                                            profile.alias.isNotBlank() &&
-                                            profile.cbu.isNotBlank()
-                            if (onboarded && profile != null) {
-                                com.mitimiti.app.presentation.perfil.AppSettings.updateUsername(profile.username)
-                                com.mitimiti.app.presentation.perfil.AppSettings.updateAlias(profile.alias)
-                                com.mitimiti.app.presentation.perfil.AppSettings.updateCbu(profile.cbu)
-                            }
-                            _uiState.update {
-                                it.copy(isOnboarded = onboarded)
+                    profileJob =
+                        launch {
+                            tableRepository.observeUserProfile(user.uid).collect { profile ->
+                                val onboarded =
+                                    profile != null &&
+                                        profile.username.isNotBlank() &&
+                                        profile.alias.isNotBlank() &&
+                                        profile.cbu.isNotBlank()
+                                if (onboarded && profile != null) {
+                                    com.mitimiti.app.presentation.perfil.AppSettings.updateUsername(profile.username)
+                                    com.mitimiti.app.presentation.perfil.AppSettings.updateAlias(profile.alias)
+                                    com.mitimiti.app.presentation.perfil.AppSettings.updateCbu(profile.cbu)
+                                }
+                                _uiState.update {
+                                    it.copy(isOnboarded = onboarded)
+                                }
                             }
                         }
-                    }
                 } else {
                     _uiState.update {
                         it.copy(isOnboarded = null)
@@ -136,11 +138,12 @@ class AuthViewModel(
         val userId = authRepository.currentUser?.uid ?: return
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
-            val profile = com.mitimiti.app.domain.model.UserProfile(
-                username = username.trim(),
-                alias = alias.trim(),
-                cbu = cbu.trim(),
-            )
+            val profile =
+                com.mitimiti.app.domain.model.UserProfile(
+                    username = username.trim(),
+                    alias = alias.trim(),
+                    cbu = cbu.trim(),
+                )
             val success = tableRepository.claimUsernameAndSaveProfile(userId, profile)
             if (success) {
                 _uiState.update { it.copy(isLoading = false, isOnboarded = true) }

@@ -51,11 +51,12 @@ class FirebaseTableRepository(
         userId: String,
         profile: com.mitimiti.app.domain.model.UserProfile,
     ) {
-        val dto = com.mitimiti.app.data.model.UserProfileDto(
-            username = profile.username,
-            alias = profile.alias,
-            cbu = profile.cbu
-        )
+        val dto =
+            com.mitimiti.app.data.model.UserProfileDto(
+                username = profile.username,
+                alias = profile.alias,
+                cbu = profile.cbu,
+            )
         dataSource.saveUserProfile(userId, dto)
     }
 
@@ -65,7 +66,7 @@ class FirebaseTableRepository(
                 com.mitimiti.app.domain.model.UserProfile(
                     username = dto.username,
                     alias = dto.alias,
-                    cbu = dto.cbu
+                    cbu = dto.cbu,
                 )
             } else {
                 null
@@ -77,11 +78,12 @@ class FirebaseTableRepository(
         userId: String,
         profile: com.mitimiti.app.domain.model.UserProfile,
     ): Boolean {
-        val dto = com.mitimiti.app.data.model.UserProfileDto(
-            username = profile.username,
-            alias = profile.alias,
-            cbu = profile.cbu
-        )
+        val dto =
+            com.mitimiti.app.data.model.UserProfileDto(
+                username = profile.username,
+                alias = profile.alias,
+                cbu = profile.cbu,
+            )
         return dataSource.claimUsernameAndSaveProfile(userId, dto)
     }
 
@@ -94,7 +96,7 @@ class FirebaseTableRepository(
             com.mitimiti.app.domain.model.UserProfile(
                 username = dto.username,
                 alias = dto.alias,
-                cbu = dto.cbu
+                cbu = dto.cbu,
             )
         }
     }
@@ -103,13 +105,14 @@ class FirebaseTableRepository(
         userId: String,
         friends: List<com.mitimiti.app.domain.model.UserProfile>,
     ) {
-        val dtos = friends.map {
-            com.mitimiti.app.data.model.UserProfileDto(
-                username = it.username,
-                alias = it.alias,
-                cbu = it.cbu
-            )
-        }
+        val dtos =
+            friends.map {
+                com.mitimiti.app.data.model.UserProfileDto(
+                    username = it.username,
+                    alias = it.alias,
+                    cbu = it.cbu,
+                )
+            }
         dataSource.saveFrequentFriends(userId, dtos)
     }
 
@@ -119,7 +122,7 @@ class FirebaseTableRepository(
                 com.mitimiti.app.domain.model.UserProfile(
                     username = dto.username,
                     alias = dto.alias,
-                    cbu = dto.cbu
+                    cbu = dto.cbu,
                 )
             }
         }

@@ -110,7 +110,7 @@ fun FriendsScreen(
                                 style = MaterialTheme.typography.bodyMedium,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.padding(start = 8.dp, end = 2.dp)
+                                modifier = Modifier.padding(start = 8.dp, end = 2.dp),
                             )
                         },
                         modifier = Modifier.weight(1f),
@@ -128,7 +128,7 @@ fun FriendsScreen(
                                 },
                                 onError = { error ->
                                     errorMessage = error
-                                }
+                                },
                             )
                         },
                         enabled = newFriendName.isNotBlank(),
@@ -148,7 +148,7 @@ fun FriendsScreen(
                         color = MaterialTheme.colorScheme.error,
                         style = MaterialTheme.typography.bodySmall,
                         fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(top = 4.dp)
+                        modifier = Modifier.padding(top = 4.dp),
                     )
                 }
             }
