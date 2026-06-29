@@ -35,6 +35,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.mitimiti.app.presentation.mesa.TableViewModel
 import com.mitimiti.app.presentation.perfil.AppSettings
 import com.mitimiti.app.presentation.theme.ClayButton
 import com.mitimiti.app.presentation.theme.claymorphic
@@ -42,13 +43,13 @@ import com.mitimiti.app.presentation.theme.claymorphic
 @Composable
 @Suppress("FunctionNaming", "LongMethod")
 fun FriendsScreen(
-    onAddFriend: (String) -> Unit,
-    onRemoveFriend: (String) -> Unit,
+    viewModel: TableViewModel,
     modifier: Modifier = Modifier,
 ) {
     val isDark = isSystemInDarkTheme()
     val frequentFriends by AppSettings.frequentFriends.collectAsState()
     var newFriendName by remember { mutableStateOf("") }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
 
     Column(
         modifier =
@@ -81,12 +82,12 @@ fun FriendsScreen(
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(
-                    text = "Nuevo Amigo Frecuente",
+                    text = "Agregar Amigo por Username",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                 )
                 Text(
-                    text = "Agregá amigos para no tener que escribir sus nombres cada vez que crees una vaquita.",
+                    text = "Ingresá el nombre de usuario único de tu amigo. Solo podés agregar usuarios registrados.",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
                 )
@@ -97,8 +98,21 @@ fun FriendsScreen(
                 ) {
                     OutlinedTextField(
                         value = newFriendName,
-                        onValueChange = { newFriendName = it },
-                        label = { Text("Nombre / Apodo") },
+                        onValueChange = {
+                            newFriendName = it.filter { char -> !char.isWhitespace() }
+                            errorMessage = null
+                        },
+                        label = { Text("Nombre de usuario") },
+                        placeholder = { Text("Ej: santi") },
+                        leadingIcon = {
+                            Text(
+                                text = "  @",
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.padding(start = 8.dp, end = 2.dp)
+                            )
+                        },
                         modifier = Modifier.weight(1f),
                         singleLine = true,
                         shape = RoundedCornerShape(16.dp),
@@ -106,18 +120,36 @@ fun FriendsScreen(
                     Spacer(modifier = Modifier.width(8.dp))
                     ClayButton(
                         onClick = {
-                            onAddFriend(newFriendName)
-                            newFriendName = ""
+                            viewModel.searchAndAddFrequentFriend(
+                                username = newFriendName,
+                                onSuccess = {
+                                    newFriendName = ""
+                                    errorMessage = null
+                                },
+                                onError = { error ->
+                                    errorMessage = error
+                                }
+                            )
                         },
                         enabled = newFriendName.isNotBlank(),
                         cornerRadius = 16.dp,
                     ) {
                         Text(
-                            text = "Guardar",
+                            text = "Agregar",
                             fontWeight = FontWeight.Bold,
                             modifier = Modifier.padding(horizontal = 8.dp),
                         )
                     }
+                }
+
+                errorMessage?.let { error ->
+                    Text(
+                        text = error,
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(top = 4.dp)
+                    )
                 }
             }
         }
@@ -125,7 +157,7 @@ fun FriendsScreen(
         Spacer(modifier = Modifier.height(20.dp))
 
         Text(
-            text = "Amigos Registrados (${frequentFriends.size})",
+            text = "Amigos Agregados (${frequentFriends.size})",
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.align(Alignment.Start),
@@ -143,7 +175,7 @@ fun FriendsScreen(
                 contentAlignment = Alignment.Center,
             ) {
                 Text(
-                    text = "No tenés amigos registrados todavía.",
+                    text = "No tenés amigos agregados todavía.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -156,7 +188,7 @@ fun FriendsScreen(
                         .fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
-                items(frequentFriends) { name ->
+                items(frequentFriends) { friend ->
                     Box(
                         modifier =
                             Modifier
@@ -179,13 +211,19 @@ fun FriendsScreen(
                                 tint = MaterialTheme.colorScheme.primary,
                             )
                             Spacer(modifier = Modifier.width(12.dp))
-                            Text(
-                                text = name,
-                                style = MaterialTheme.typography.bodyLarge,
-                                fontWeight = FontWeight.SemiBold,
-                                modifier = Modifier.weight(1f),
-                            )
-                            IconButton(onClick = { onRemoveFriend(name) }) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = "@${friend.username}",
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    fontWeight = FontWeight.Bold,
+                                )
+                                Text(
+                                    text = "Alias: ${friend.alias} • CBU: ${friend.cbu}",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
+                                )
+                            }
+                            IconButton(onClick = { viewModel.removeFrequentFriend(friend.username) }) {
                                 Icon(
                                     imageVector = Icons.Default.Delete,
                                     contentDescription = "Eliminar amigo",

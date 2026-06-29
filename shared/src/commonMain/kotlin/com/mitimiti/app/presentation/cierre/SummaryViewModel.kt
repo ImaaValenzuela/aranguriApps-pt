@@ -52,7 +52,7 @@ class SummaryViewModel(
                 tableRepository.observeTable(tableId).collect { table ->
                     if (table != null) {
                         val summary = calculateSplitExpensesUseCase(table)
-                        val shareText = buildShareText(table.name, summary)
+                        val shareText = buildShareText(table.name, summary, table.friends)
                         _uiState.update {
                             it.copy(
                                 tableId = tableId,
@@ -125,6 +125,7 @@ class SummaryViewModel(
     private fun buildShareText(
         tableName: String,
         summary: TableBillSummary,
+        friends: List<com.mitimiti.app.domain.model.Friend>,
     ): String {
         return buildString {
             appendLine("Miti y Miti - Resumen de la Vaquita: $tableName")
@@ -147,6 +148,19 @@ class SummaryViewModel(
                 appendLine("Transferencias para saldar:")
                 summary.transactions.forEach { tx ->
                     appendLine("  * ${tx.fromFriendName} le transfiere $${tx.amount.format(2)} a ${tx.toFriendName}")
+                    val recipient = friends.find { it.name.equals(tx.toFriendName, ignoreCase = true) }
+                    if (recipient != null) {
+                        val rAlias = recipient.alias
+                        val rCbu = recipient.cbu
+                        if (!rAlias.isNullOrBlank() || !rCbu.isNullOrBlank()) {
+                            append("    (Datos de ${tx.toFriendName}: ")
+                            val parts = mutableListOf<String>()
+                            if (!rAlias.isNullOrBlank()) parts.add("Alias: $rAlias")
+                            if (!rCbu.isNullOrBlank()) parts.add("CBU/CVU: $rCbu")
+                            append(parts.joinToString(" | "))
+                            appendLine(")")
+                        }
+                    }
                 }
             } else {
                 appendLine("¡Quedaron a mano! No hay deudas.")

@@ -109,11 +109,21 @@ fun ProfileScreen(
                 }
                 Spacer(modifier = Modifier.width(16.dp))
                 Column {
-                    Text(
-                        text = "¡Hola!",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Black,
-                    )
+                    val username by AppSettings.username.collectAsState()
+                    if (username.isNotEmpty()) {
+                        Text(
+                            text = "@$username",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Black,
+                            color = MaterialTheme.colorScheme.primary,
+                        )
+                    } else {
+                        Text(
+                            text = "¡Hola!",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Black,
+                        )
+                    }
                     Text(
                         text = userEmail ?: "Usuario Anónimo",
                         style = MaterialTheme.typography.bodyMedium,
@@ -163,6 +173,17 @@ fun ProfileScreen(
                 )
 
                 Divider()
+
+                val username by AppSettings.username.collectAsState()
+                OutlinedTextField(
+                    value = "@$username",
+                    onValueChange = {},
+                    label = { Text("Nombre de Usuario (Único)") },
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = false,
+                    singleLine = true,
+                    shape = RoundedCornerShape(16.dp),
+                )
 
                 OutlinedTextField(
                     value = aliasInput,

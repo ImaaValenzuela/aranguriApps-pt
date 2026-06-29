@@ -24,10 +24,19 @@ interface TableRepository {
 
     fun observeUserProfile(userId: String): Flow<com.mitimiti.app.domain.model.UserProfile?>
 
+    suspend fun claimUsernameAndSaveProfile(
+        userId: String,
+        profile: com.mitimiti.app.domain.model.UserProfile,
+    ): Boolean
+
+    suspend fun getUserIdByUsername(username: String): String?
+
+    suspend fun getUserProfile(userId: String): com.mitimiti.app.domain.model.UserProfile?
+
     suspend fun saveFrequentFriends(
         userId: String,
-        friends: List<String>,
+        friends: List<com.mitimiti.app.domain.model.UserProfile>,
     )
 
-    fun observeFrequentFriends(userId: String): Flow<List<String>>
+    fun observeFrequentFriends(userId: String): Flow<List<com.mitimiti.app.domain.model.UserProfile>>
 }
