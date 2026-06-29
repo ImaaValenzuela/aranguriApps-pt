@@ -17,13 +17,16 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
 
 class MainActivity : ComponentActivity() {
+    private val deepLinkUrlState = mutableStateOf<String?>(null)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
-
+        handleIntent(intent)
 
         setContent {
             var googleIdToken by remember { mutableStateOf<String?>(null) }
+            val deepLinkUrl by remember { deepLinkUrlState }
 
             val googleSignInOptions = remember {
                 GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -55,7 +58,21 @@ class MainActivity : ComponentActivity() {
                 onGoogleSignInClick = onGoogleSignInClick,
                 googleIdToken = googleIdToken,
                 onGoogleTokenConsumed = { googleIdToken = null },
+                deepLinkUrl = deepLinkUrl,
+                onDeepLinkConsumed = { deepLinkUrlState.value = null },
             )
+        }
+    }
+
+    override fun onNewIntent(intent: android.content.Intent) {
+        super.onNewIntent(intent)
+        handleIntent(intent)
+    }
+
+    private fun handleIntent(intent: android.content.Intent?) {
+        val uri = intent?.data
+        if (uri != null && uri.scheme == "mitimiti") {
+            deepLinkUrlState.value = uri.toString()
         }
     }
 }

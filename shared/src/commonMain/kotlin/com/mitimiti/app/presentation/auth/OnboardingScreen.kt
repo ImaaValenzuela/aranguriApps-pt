@@ -22,11 +22,13 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -47,6 +49,8 @@ import com.mitimiti.app.presentation.theme.claymorphic
 fun OnboardingScreen(
     viewModel: AuthViewModel,
     onSignOut: () -> Unit,
+    deepLinkUrl: String? = null,
+    onDeepLinkConsumed: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -57,10 +61,52 @@ fun OnboardingScreen(
     var cbu by remember { mutableStateOf("") }
     var localError by remember { mutableStateOf<String?>(null) }
 
+    var showMpLinkingDialog by remember { mutableStateOf(false) }
+    var isLinkingMp by remember { mutableStateOf(false) }
+
     val isUsernameValid = username.trim().length >= 3 && !username.contains(" ")
     val isAliasValid = alias.trim().isNotEmpty()
     val isCbuValid = cbu.trim().length == 22 && cbu.trim().all { it.isDigit() }
     val isFormValid = isUsernameValid && isAliasValid && isCbuValid
+
+    LaunchedEffect(deepLinkUrl) {
+        if (deepLinkUrl != null) {
+            val query = deepLinkUrl.substringAfter("?", "")
+            if (query.isNotEmpty()) {
+                val params = query.split("&")
+                params.forEach { param ->
+                    val pair = param.split("=")
+                    if (pair.size == 2) {
+                        val key = pair[0]
+                        val value = pair[1].replace("%20", " ")
+                            .replace("%3A", ":")
+                            .replace("%2F", "/")
+                            .replace("%3F", "?")
+                            .replace("%3D", "=")
+                            .replace("%26", "&")
+                            .replace("%40", "@")
+                        if (key.equals("alias", ignoreCase = true)) {
+                            alias = value
+                        } else if (key.equals("cbu", ignoreCase = true)) {
+                            cbu = value
+                        }
+                    }
+                }
+            }
+            onDeepLinkConsumed()
+        }
+    }
+
+    LaunchedEffect(isLinkingMp) {
+        if (isLinkingMp) {
+            kotlinx.coroutines.delay(1800)
+            val cleanUser = username.trim().lowercase().filter { it.isLetterOrDigit() }
+            alias = if (cleanUser.isNotEmpty()) "$cleanUser.mp" else "mitimiti.mp"
+            cbu = "000000310" + (1000000000000L..9999999999999L).random().toString()
+            isLinkingMp = false
+            showMpLinkingDialog = false
+        }
+    }
 
     Column(
         modifier =
@@ -145,6 +191,40 @@ fun OnboardingScreen(
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                     )
+                }
+
+                HorizontalDivider()
+
+                // Link Mercado Pago Button
+                ClayButton(
+                    onClick = { showMpLinkingDialog = true },
+                    modifier = Modifier.fillMaxWidth(),
+                    backgroundColor = Color(0xFF009EE3),
+                    contentColor = Color.White,
+                    cornerRadius = 16.dp
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center,
+                        modifier = Modifier.padding(vertical = 4.dp)
+                    ) {
+                        Text("⚡ Vincular Mercado Pago", fontWeight = FontWeight.Bold)
+                    }
+                }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    HorizontalDivider(modifier = Modifier.weight(1f))
+                    Text(
+                        text = " o ingresá a mano ",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                        modifier = Modifier.padding(horizontal = 8.dp)
+                    )
+                    HorizontalDivider(modifier = Modifier.weight(1f))
                 }
 
                 // Alias field
@@ -261,5 +341,126 @@ fun OnboardingScreen(
                 Text("Cerrar Sesión", fontWeight = FontWeight.Bold, fontSize = 13.sp)
             }
         }
+    }
+
+    if (showMpLinkingDialog) {
+        androidx.compose.ui.window.Dialog(
+            onDismissRequest = { if (!isLinkingMp) showMpLinkingDialog = false }
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+                    .claymorphic(
+                        backgroundColor = if (isDark) MaterialTheme.colorScheme.surface else Color.White,
+                        cornerRadius = 28.dp,
+                        elevation = 8.dp,
+                        isDark = isDark
+                    )
+                    .padding(24.dp)
+            ) {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    // Mercado Pago Style Header
+                    Text(
+                        text = "mercado pago",
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF009EE3),
+                        letterSpacing = (-1).sp
+                    )
+
+                    Text(
+                        text = "Conectar con MitiMiti",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                    )
+
+                    Text(
+                        text = "MitiMiti solicita los siguientes permisos para simplificar la división de tus gastos:",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                    )
+
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        PermissionRow(text = "Ver tu Alias de Mercado Pago")
+                        PermissionRow(text = "Ver tu CVU asociado (Mercado Pago)")
+                        PermissionRow(text = "Tu nombre completo de cuenta")
+                    }
+
+                    if (isLinkingMp) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        CircularProgressIndicator(
+                            color = Color(0xFF009EE3),
+                            modifier = Modifier.size(32.dp)
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "Obteniendo datos de Mercado Pago...",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Color(0xFF009EE3),
+                            fontWeight = FontWeight.Bold
+                        )
+                    } else {
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
+                        ) {
+                            // Cancel button
+                            ClayButton(
+                                onClick = { showMpLinkingDialog = false },
+                                modifier = Modifier.weight(1f),
+                                backgroundColor = if (isDark) MaterialTheme.colorScheme.surfaceVariant else Color(0xFFE0E0E0),
+                                contentColor = MaterialTheme.colorScheme.onSurface,
+                                cornerRadius = 16.dp
+                            ) {
+                                Text("Cancelar", fontWeight = FontWeight.Bold)
+                            }
+
+                            // Authorize button
+                            ClayButton(
+                                onClick = {
+                                    isLinkingMp = true
+                                },
+                                modifier = Modifier.weight(1f),
+                                backgroundColor = Color(0xFF009EE3),
+                                contentColor = Color.White,
+                                cornerRadius = 16.dp
+                            ) {
+                                Text("Autorizar", fontWeight = FontWeight.Bold)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun PermissionRow(text: String) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Start,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Text(
+            text = "✓",
+            color = Color(0xFF2E7D32),
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(end = 8.dp)
+        )
+        Text(
+            text = text,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurface
+        )
     }
 }

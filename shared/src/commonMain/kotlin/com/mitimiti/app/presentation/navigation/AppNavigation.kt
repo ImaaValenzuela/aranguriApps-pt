@@ -40,6 +40,8 @@ fun AppNavigation(
     onGoogleSignInClick: () -> Unit = {},
     googleIdToken: String? = null,
     onGoogleTokenConsumed: () -> Unit = {},
+    deepLinkUrl: String? = null,
+    onDeepLinkConsumed: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     val navController = rememberNavController()
@@ -148,6 +150,8 @@ fun AppNavigation(
                     authViewModel.signOut()
                     tableViewModel.resetTableState()
                 },
+                deepLinkUrl = deepLinkUrl,
+                onDeepLinkConsumed = onDeepLinkConsumed,
                 modifier = Modifier,
             )
         }

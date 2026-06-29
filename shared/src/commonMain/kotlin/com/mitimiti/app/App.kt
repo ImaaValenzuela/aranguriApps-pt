@@ -15,6 +15,8 @@ fun App(
     onGoogleSignInClick: () -> Unit = {},
     googleIdToken: String? = null,
     onGoogleTokenConsumed: () -> Unit = {},
+    deepLinkUrl: String? = null,
+    onDeepLinkConsumed: () -> Unit = {},
 ) {
     MitiMitiTheme {
         Box(
@@ -27,6 +29,8 @@ fun App(
                 onGoogleSignInClick = onGoogleSignInClick,
                 googleIdToken = googleIdToken,
                 onGoogleTokenConsumed = onGoogleTokenConsumed,
+                deepLinkUrl = deepLinkUrl,
+                onDeepLinkConsumed = onDeepLinkConsumed,
             )
         }
     }
