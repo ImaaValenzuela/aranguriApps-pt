@@ -70,6 +70,57 @@ class FirebaseRemoteDataSource {
         }
     }
 
+    suspend fun claimUsernameAndSaveProfile(
+        userId: String,
+        profile: UserProfileDto,
+    ): Boolean {
+        try {
+            val usernameKey = profile.username.lowercase().trim()
+            val usernamesRef = database.reference("usernames").child(usernameKey)
+            val existingSnapshot = usernamesRef.valueEvents.first()
+            if (existingSnapshot.exists) {
+                val existingUid = existingSnapshot.value<String>()
+                if (existingUid != userId) {
+                    return false
+                }
+            }
+            usernamesRef.setValue(userId)
+            database.reference("users").child(userId).child("profile").setValue(profile)
+            return true
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return false
+        }
+    }
+
+    suspend fun getUserIdByUsername(username: String): String? {
+        return try {
+            val snapshot = database.reference("usernames").child(username.lowercase().trim()).valueEvents.first()
+            if (snapshot.exists) {
+                snapshot.value<String>()
+            } else {
+                null
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
+    }
+
+    suspend fun getUserProfile(userId: String): UserProfileDto? {
+        return try {
+            val snapshot = database.reference("users").child(userId).child("profile").valueEvents.first()
+            if (snapshot.exists) {
+                snapshot.value<UserProfileDto>()
+            } else {
+                null
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
+    }
+
     suspend fun saveUserProfile(
         userId: String,
         profile: UserProfileDto,
@@ -97,7 +148,7 @@ class FirebaseRemoteDataSource {
 
     suspend fun saveFrequentFriends(
         userId: String,
-        friends: List<String>,
+        friends: List<UserProfileDto>,
     ) {
         try {
             database.reference("users").child(userId).child("frequent_friends").setValue(friends)
@@ -106,11 +157,11 @@ class FirebaseRemoteDataSource {
         }
     }
 
-    fun observeFrequentFriends(userId: String): Flow<List<String>> {
+    fun observeFrequentFriends(userId: String): Flow<List<UserProfileDto>> {
         return database.reference("users").child(userId).child("frequent_friends").valueEvents.map { snapshot ->
             if (snapshot.exists) {
                 try {
-                    snapshot.value<List<String>>()
+                    snapshot.value<List<UserProfileDto>>()
                 } catch (e: Exception) {
                     emptyList()
                 }

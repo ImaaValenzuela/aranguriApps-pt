@@ -4,11 +4,16 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -39,14 +44,14 @@ fun AppNavigation(
 ) {
     val navController = rememberNavController()
 
-    val authRepository = remember { FirebaseAuthRepository() }
-    val authViewModel = remember { AuthViewModel(authRepository) }
-    val authState by authViewModel.uiState.collectAsState()
-
     val firebaseRemoteDataSource = remember { FirebaseRemoteDataSource() }
     val tableRepository = remember { FirebaseTableRepository(firebaseRemoteDataSource) }
     val syncRepository = remember { FirebaseRealtimeSyncRepository() }
     val calculateSplitExpensesUseCase = remember { CalculateSplitExpensesUseCase() }
+
+    val authRepository = remember { FirebaseAuthRepository() }
+    val authViewModel = remember { AuthViewModel(authRepository, tableRepository) }
+    val authState by authViewModel.uiState.collectAsState()
 
     val tableViewModel =
         remember {
@@ -67,10 +72,16 @@ fun AppNavigation(
     }
 
     // Monitor authentication state and adjust navigation
-    LaunchedEffect(authState.isAuthenticated) {
+    LaunchedEffect(authState.isAuthenticated, authState.isOnboarded) {
         if (authState.isAuthenticated) {
-            navController.navigate("main_hub") {
-                popUpTo(0) { inclusive = true }
+            if (authState.isOnboarded == true) {
+                navController.navigate("main_hub") {
+                    popUpTo(0) { inclusive = true }
+                }
+            } else if (authState.isOnboarded == false) {
+                navController.navigate("onboarding") {
+                    popUpTo(0) { inclusive = true }
+                }
             }
         } else {
             navController.navigate("login") {
@@ -79,9 +90,25 @@ fun AppNavigation(
         }
     }
 
+    if (authState.isAuthenticated && authState.isOnboarded == null) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center,
+        ) {
+            CircularProgressIndicator(
+                color = MaterialTheme.colorScheme.primary,
+            )
+        }
+        return
+    }
+
     val startDestination =
-        remember {
-            if (authState.isAuthenticated) "main_hub" else "login"
+        remember(authState.isAuthenticated, authState.isOnboarded) {
+            if (authState.isAuthenticated) {
+                if (authState.isOnboarded == false) "onboarding" else "main_hub"
+            } else {
+                "login"
+            }
         }
 
     NavHost(
@@ -110,6 +137,16 @@ fun AppNavigation(
                     navController.navigate("login") {
                         popUpTo("login") { inclusive = true }
                     }
+                },
+                modifier = Modifier,
+            )
+        }
+        composable("onboarding") {
+            com.mitimiti.app.presentation.auth.OnboardingScreen(
+                viewModel = authViewModel,
+                onSignOut = {
+                    authViewModel.signOut()
+                    tableViewModel.resetTableState()
                 },
                 modifier = Modifier,
             )

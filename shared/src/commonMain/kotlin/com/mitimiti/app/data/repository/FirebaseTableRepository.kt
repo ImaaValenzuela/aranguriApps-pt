@@ -51,28 +51,80 @@ class FirebaseTableRepository(
         userId: String,
         profile: com.mitimiti.app.domain.model.UserProfile,
     ) {
-        val dto = com.mitimiti.app.data.model.UserProfileDto(alias = profile.alias, cbu = profile.cbu)
+        val dto =
+            com.mitimiti.app.data.model.UserProfileDto(
+                username = profile.username,
+                alias = profile.alias,
+                cbu = profile.cbu,
+            )
         dataSource.saveUserProfile(userId, dto)
     }
 
     override fun observeUserProfile(userId: String): Flow<com.mitimiti.app.domain.model.UserProfile?> {
         return dataSource.observeUserProfile(userId).map { dto ->
             if (dto != null) {
-                com.mitimiti.app.domain.model.UserProfile(alias = dto.alias, cbu = dto.cbu)
+                com.mitimiti.app.domain.model.UserProfile(
+                    username = dto.username,
+                    alias = dto.alias,
+                    cbu = dto.cbu,
+                )
             } else {
                 null
             }
         }
     }
 
-    override suspend fun saveFrequentFriends(
+    override suspend fun claimUsernameAndSaveProfile(
         userId: String,
-        friends: List<String>,
-    ) {
-        dataSource.saveFrequentFriends(userId, friends)
+        profile: com.mitimiti.app.domain.model.UserProfile,
+    ): Boolean {
+        val dto =
+            com.mitimiti.app.data.model.UserProfileDto(
+                username = profile.username,
+                alias = profile.alias,
+                cbu = profile.cbu,
+            )
+        return dataSource.claimUsernameAndSaveProfile(userId, dto)
     }
 
-    override fun observeFrequentFriends(userId: String): Flow<List<String>> {
-        return dataSource.observeFrequentFriends(userId)
+    override suspend fun getUserIdByUsername(username: String): String? {
+        return dataSource.getUserIdByUsername(username)
+    }
+
+    override suspend fun getUserProfile(userId: String): com.mitimiti.app.domain.model.UserProfile? {
+        return dataSource.getUserProfile(userId)?.let { dto ->
+            com.mitimiti.app.domain.model.UserProfile(
+                username = dto.username,
+                alias = dto.alias,
+                cbu = dto.cbu,
+            )
+        }
+    }
+
+    override suspend fun saveFrequentFriends(
+        userId: String,
+        friends: List<com.mitimiti.app.domain.model.UserProfile>,
+    ) {
+        val dtos =
+            friends.map {
+                com.mitimiti.app.data.model.UserProfileDto(
+                    username = it.username,
+                    alias = it.alias,
+                    cbu = it.cbu,
+                )
+            }
+        dataSource.saveFrequentFriends(userId, dtos)
+    }
+
+    override fun observeFrequentFriends(userId: String): Flow<List<com.mitimiti.app.domain.model.UserProfile>> {
+        return dataSource.observeFrequentFriends(userId).map { list ->
+            list.map { dto ->
+                com.mitimiti.app.domain.model.UserProfile(
+                    username = dto.username,
+                    alias = dto.alias,
+                    cbu = dto.cbu,
+                )
+            }
+        }
     }
 }

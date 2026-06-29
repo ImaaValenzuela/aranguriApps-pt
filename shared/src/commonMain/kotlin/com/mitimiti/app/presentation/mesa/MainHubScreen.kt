@@ -55,6 +55,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.mitimiti.app.domain.model.TableType
 import com.mitimiti.app.presentation.amigos.FriendsScreen
+import com.mitimiti.app.presentation.perfil.AppSettings
 import com.mitimiti.app.presentation.perfil.ProfileScreen
 import com.mitimiti.app.presentation.stats.StatsScreen
 import com.mitimiti.app.presentation.theme.ClayButton
@@ -112,9 +113,11 @@ fun MainHubScreen(
     var showBottomSheet by remember { mutableStateOf(false) }
     var bottomSheetMode by remember { mutableStateOf(0) } // 0: Create, 1: Join
 
+    val currentUsername by AppSettings.username.collectAsState()
+
     // Form states for Create Table
     var tableNameInput by remember { mutableStateOf("") }
-    var creatorNickname by remember { mutableStateOf("") }
+    var creatorNickname by remember { mutableStateOf(currentUsername) }
     var selectedType by remember { mutableStateOf(TableType.RESTAURANT) }
     var tipPercentageInput by remember { mutableStateOf("10") }
     var fixedCostInput by remember { mutableStateOf("0") }
@@ -122,7 +125,16 @@ fun MainHubScreen(
 
     // Form states for Join Table
     var joinCodeInput by remember { mutableStateOf("") }
-    var joinNicknameInput by remember { mutableStateOf("") }
+    var joinNicknameInput by remember { mutableStateOf(currentUsername) }
+
+    LaunchedEffect(currentUsername) {
+        if (creatorNickname.isEmpty()) {
+            creatorNickname = currentUsername
+        }
+        if (joinNicknameInput.isEmpty()) {
+            joinNicknameInput = currentUsername
+        }
+    }
 
     val qrScanner =
         rememberQRScanner { result ->
@@ -157,8 +169,7 @@ fun MainHubScreen(
                     )
                 1 ->
                     FriendsScreen(
-                        onAddFriend = { name -> viewModel.addFrequentFriend(name) },
-                        onRemoveFriend = { name -> viewModel.removeFrequentFriend(name) },
+                        viewModel = viewModel,
                     )
                 3 -> StatsScreen(tables = tables)
                 4 ->

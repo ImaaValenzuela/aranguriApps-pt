@@ -4,17 +4,21 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
 object AppSettings {
+    private val _username = MutableStateFlow("")
+    val username: StateFlow<String> = _username
+
     private val _alias = MutableStateFlow("mitimiti.app")
     val alias: StateFlow<String> = _alias
 
     private val _cbu = MutableStateFlow("0000003100012345678901")
     val cbu: StateFlow<String> = _cbu
 
-    private val _frequentFriends =
-        MutableStateFlow(
-            listOf("Juan", "Maria", "Carlos", "Flor", "Santi"),
-        )
-    val frequentFriends: StateFlow<List<String>> = _frequentFriends
+    private val _frequentFriends = MutableStateFlow<List<com.mitimiti.app.domain.model.UserProfile>>(emptyList())
+    val frequentFriends: StateFlow<List<com.mitimiti.app.domain.model.UserProfile>> = _frequentFriends
+
+    fun updateUsername(value: String) {
+        _username.value = value
+    }
 
     fun updateAlias(value: String) {
         _alias.value = value
@@ -24,18 +28,17 @@ object AppSettings {
         _cbu.value = value
     }
 
-    fun addFriend(name: String) {
-        val trimmed = name.trim()
-        if (trimmed.isNotEmpty() && !_frequentFriends.value.contains(trimmed)) {
-            _frequentFriends.value = _frequentFriends.value + trimmed
+    fun addFriend(friend: com.mitimiti.app.domain.model.UserProfile) {
+        if (!_frequentFriends.value.any { it.username.equals(friend.username, ignoreCase = true) }) {
+            _frequentFriends.value = _frequentFriends.value + friend
         }
     }
 
-    fun removeFriend(name: String) {
-        _frequentFriends.value = _frequentFriends.value - name.trim()
+    fun removeFriend(username: String) {
+        _frequentFriends.value = _frequentFriends.value.filterNot { it.username.equals(username, ignoreCase = true) }
     }
 
-    fun setFrequentFriends(list: List<String>) {
+    fun setFrequentFriends(list: List<com.mitimiti.app.domain.model.UserProfile>) {
         _frequentFriends.value = list
     }
 }

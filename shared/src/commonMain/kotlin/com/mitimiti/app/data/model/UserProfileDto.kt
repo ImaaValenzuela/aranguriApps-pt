@@ -4,6 +4,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class UserProfileDto(
+    val username: String = "",
     val alias: String = "",
     val cbu: String = "",
 )

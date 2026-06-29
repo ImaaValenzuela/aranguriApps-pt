@@ -67,6 +67,7 @@ class TableViewModel(
                 launch {
                     tableRepository.observeUserProfile(userId).collect { profile ->
                         if (profile != null) {
+                            AppSettings.updateUsername(profile.username)
                             AppSettings.updateAlias(profile.alias)
                             AppSettings.updateCbu(profile.cbu)
                         }
@@ -74,9 +75,7 @@ class TableViewModel(
                 }
                 launch {
                     tableRepository.observeFrequentFriends(userId).collect { list ->
-                        if (list.isNotEmpty()) {
-                            AppSettings.setFrequentFriends(list)
-                        }
+                        AppSettings.setFrequentFriends(list)
                     }
                 }
             }
@@ -87,25 +86,53 @@ class TableViewModel(
         cbu: String,
     ) {
         val userId = authRepository.currentUser?.uid ?: return
+        val currentUsername = AppSettings.username.value
         AppSettings.updateAlias(alias)
         AppSettings.updateCbu(cbu)
         viewModelScope.launch {
-            tableRepository.saveUserProfile(userId, UserProfile(alias, cbu))
+            tableRepository.saveUserProfile(userId, UserProfile(currentUsername, alias, cbu))
         }
     }
 
-    fun addFrequentFriend(name: String) {
-        val trimmed = name.trim()
-        if (trimmed.isEmpty()) return
-        AppSettings.addFriend(trimmed)
-        val userId = authRepository.currentUser?.uid ?: return
+    fun searchAndAddFrequentFriend(
+        username: String,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit,
+    ) {
+        val trimmedUsername = username.trim().removePrefix("@")
+        if (trimmedUsername.isEmpty()) {
+            onError("El nombre de usuario no puede estar vacío")
+            return
+        }
+
+        val currentUserId = authRepository.currentUser?.uid ?: return
+        val currentUsername = AppSettings.username.value
+        if (trimmedUsername.equals(currentUsername, ignoreCase = true)) {
+            onError("No podés agregarte a vos mismo")
+            return
+        }
+
         viewModelScope.launch {
-            tableRepository.saveFrequentFriends(userId, AppSettings.frequentFriends.value)
+            val targetUserId = tableRepository.getUserIdByUsername(trimmedUsername)
+            if (targetUserId == null) {
+                onError("El usuario @$trimmedUsername no está registrado")
+                return@launch
+            }
+
+            val targetProfile = tableRepository.getUserProfile(targetUserId)
+            if (targetProfile == null) {
+                onError("No se pudo obtener el perfil del usuario")
+                return@launch
+            }
+
+            AppSettings.addFriend(targetProfile)
+            tableRepository.saveFrequentFriends(currentUserId, AppSettings.frequentFriends.value)
+            onSuccess()
         }
     }
 
-    fun removeFrequentFriend(name: String) {
-        val trimmed = name.trim()
+    fun removeFrequentFriend(username: String) {
+        val trimmed = username.trim().removePrefix("@")
         AppSettings.removeFriend(trimmed)
         val userId = authRepository.currentUser?.uid ?: return
         viewModelScope.launch {
@@ -131,7 +158,13 @@ class TableViewModel(
             val userId = authRepository.currentUser?.uid ?: return@launch
             _uiState.update { it.copy(isLoading = true, error = null) }
             val generatedCode = (100000..999999).random().toString()
-            val host = Friend(id = "friend_${ClockUtils.currentTimeMillis()}", name = hostName)
+            val host =
+                Friend(
+                    id = "friend_${ClockUtils.currentTimeMillis()}",
+                    name = AppSettings.username.value.ifBlank { hostName },
+                    alias = AppSettings.alias.value,
+                    cbu = AppSettings.cbu.value,
+                )
             val newTable =
                 Table(
                     id = generatedCode,
@@ -187,7 +220,13 @@ class TableViewModel(
                 val exists = table.friends.any { it.name.equals(trimmedNickname, ignoreCase = true) }
                 val updatedTable =
                     if (!exists) {
-                        val newFriend = Friend(id = "friend_${ClockUtils.currentTimeMillis()}", name = trimmedNickname)
+                        val newFriend =
+                            Friend(
+                                id = "friend_${ClockUtils.currentTimeMillis()}",
+                                name = AppSettings.username.value.ifBlank { trimmedNickname },
+                                alias = AppSettings.alias.value,
+                                cbu = AppSettings.cbu.value,
+                            )
                         table.copy(friends = table.friends + newFriend)
                     } else {
                         table
@@ -215,6 +254,72 @@ class TableViewModel(
                 onSuccess(trimmedCode)
             } else {
                 _uiState.update { it.copy(error = "Mesa no encontrada. Verifica el código.", isLoading = false) }
+            }
+        }
+    }
+
+    fun addFrequentFriendToTable(friendProfile: UserProfile) {
+        val currentTableId = _uiState.value.tableId
+        if (currentTableId.isEmpty()) return
+
+        viewModelScope.launch {
+            val table = tableRepository.getTable(currentTableId)
+            if (table != null) {
+                val exists = table.friends.any { it.name.equals(friendProfile.username, ignoreCase = true) }
+                if (!exists) {
+                    val newFriend =
+                        Friend(
+                            id = "friend_${ClockUtils.currentTimeMillis()}",
+                            name = friendProfile.username,
+                            alias = friendProfile.alias,
+                            cbu = friendProfile.cbu,
+                        )
+                    val updatedFriends = table.friends + newFriend
+                    tableRepository.saveTable(table.copy(friends = updatedFriends))
+                }
+            }
+        }
+    }
+
+    fun addFriendToTableByUsername(
+        username: String,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit,
+    ) {
+        val currentTableId = _uiState.value.tableId
+        val trimmedUsername = username.trim().removePrefix("@")
+        if (currentTableId.isEmpty() || trimmedUsername.isEmpty()) return
+
+        viewModelScope.launch {
+            val targetUserId = tableRepository.getUserIdByUsername(trimmedUsername)
+            if (targetUserId == null) {
+                onError("El usuario @$trimmedUsername no está registrado")
+                return@launch
+            }
+
+            val targetProfile = tableRepository.getUserProfile(targetUserId)
+            if (targetProfile == null) {
+                onError("No se pudo obtener el perfil del usuario")
+                return@launch
+            }
+
+            val table = tableRepository.getTable(currentTableId)
+            if (table != null) {
+                val exists = table.friends.any { it.name.equals(targetProfile.username, ignoreCase = true) }
+                if (!exists) {
+                    val newFriend =
+                        Friend(
+                            id = "friend_${ClockUtils.currentTimeMillis()}",
+                            name = targetProfile.username,
+                            alias = targetProfile.alias,
+                            cbu = targetProfile.cbu,
+                        )
+                    val updatedFriends = table.friends + newFriend
+                    tableRepository.saveTable(table.copy(friends = updatedFriends))
+                    onSuccess()
+                } else {
+                    onError("El usuario ya está en la mesa")
+                }
             }
         }
     }

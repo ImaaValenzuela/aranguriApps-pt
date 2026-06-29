@@ -1,5 +1,6 @@
 package com.mitimiti.app.presentation.mesa
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -13,6 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -48,6 +50,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.mitimiti.app.domain.model.TableType
 import com.mitimiti.app.presentation.components.QRCodeView
+import com.mitimiti.app.presentation.perfil.AppSettings
 import com.mitimiti.app.presentation.theme.ClayButton
 import com.mitimiti.app.presentation.theme.claymorphic
 
@@ -65,7 +68,9 @@ fun TableScreen(
     val clipboardManager = LocalClipboardManager.current
     val isDark = isSystemInDarkTheme()
 
+    val frequentFriends by AppSettings.frequentFriends.collectAsState()
     var friendNameInput by remember { mutableStateOf("") }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
     var copyMessageSuccess by remember { mutableStateOf(false) }
 
     LaunchedEffect(tableId) {
@@ -251,7 +256,7 @@ fun TableScreen(
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = "Sumar amigo a mano",
+                            text = "Sumar amigos a la juntada",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
                         )
@@ -263,8 +268,12 @@ fun TableScreen(
                     ) {
                         OutlinedTextField(
                             value = friendNameInput,
-                            onValueChange = { friendNameInput = it },
-                            label = { Text("Apodo del amigo") },
+                            onValueChange = {
+                                friendNameInput = it
+                                errorMessage = null
+                            },
+                            label = { Text("Apodo o @usuario") },
+                            placeholder = { Text("Ej: @santi o Juan") },
                             modifier = Modifier.weight(1.3f),
                             singleLine = true,
                             shape = RoundedCornerShape(16.dp),
@@ -272,14 +281,118 @@ fun TableScreen(
                         Spacer(modifier = Modifier.width(8.dp))
                         ClayButton(
                             onClick = {
-                                viewModel.addFriend(friendNameInput)
-                                friendNameInput = ""
+                                val input = friendNameInput.trim()
+                                if (input.startsWith("@") || !input.contains(" ")) {
+                                    val targetUsername = input.removePrefix("@")
+                                    viewModel.addFriendToTableByUsername(
+                                        username = targetUsername,
+                                        onSuccess = {
+                                            friendNameInput = ""
+                                            errorMessage = null
+                                        },
+                                        onError = { error ->
+                                            if (!input.startsWith("@")) {
+                                                viewModel.addFriend(input)
+                                                friendNameInput = ""
+                                                errorMessage = null
+                                            } else {
+                                                errorMessage = error
+                                            }
+                                        },
+                                    )
+                                } else {
+                                    viewModel.addFriend(input)
+                                    friendNameInput = ""
+                                    errorMessage = null
+                                }
                             },
                             modifier = Modifier.weight(0.7f),
                             enabled = friendNameInput.isNotEmpty(),
                             cornerRadius = 16.dp,
                         ) {
                             Text("Agregar", fontWeight = FontWeight.Bold)
+                        }
+                    }
+
+                    errorMessage?.let { error ->
+                        Text(
+                            text = error,
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodySmall,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(top = 4.dp),
+                        )
+                    }
+
+                    if (frequentFriends.isNotEmpty()) {
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Text(
+                            text = "Tus amigos frecuentes (tocar para sumar):",
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        Spacer(modifier = Modifier.height(6.dp))
+                        LazyRow(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            items(frequentFriends) { friend ->
+                                val alreadyInTable =
+                                    state.friends.any {
+                                        it.name.equals(
+                                            friend.username,
+                                            ignoreCase = true,
+                                        )
+                                    }
+                                Box(
+                                    modifier =
+                                        Modifier
+                                            .claymorphic(
+                                                backgroundColor =
+                                                    if (alreadyInTable) {
+                                                        MaterialTheme.colorScheme.primaryContainer
+                                                    } else if (isDark) {
+                                                        MaterialTheme.colorScheme.surfaceVariant
+                                                    } else {
+                                                        Color(0xFFF5F5F5)
+                                                    },
+                                                cornerRadius = 12.dp,
+                                                elevation = 1.dp,
+                                                isDark = isDark,
+                                            )
+                                            .clickable(enabled = !alreadyInTable) {
+                                                viewModel.addFrequentFriendToTable(friend)
+                                            }
+                                            .padding(horizontal = 10.dp, vertical = 6.dp),
+                                ) {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Icon(
+                                            imageVector = Icons.Default.Person,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(14.dp),
+                                            tint =
+                                                if (alreadyInTable) {
+                                                    MaterialTheme.colorScheme.primary
+                                                } else {
+                                                    MaterialTheme.colorScheme.onSurfaceVariant
+                                                },
+                                        )
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                        Text(
+                                            text = "@${friend.username}",
+                                            style = MaterialTheme.typography.labelLarge,
+                                            fontWeight = FontWeight.SemiBold,
+                                            color =
+                                                if (alreadyInTable) {
+                                                    MaterialTheme.colorScheme.onPrimaryContainer
+                                                } else {
+                                                    MaterialTheme.colorScheme.onSurface
+                                                },
+                                        )
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -328,12 +441,20 @@ fun TableScreen(
                             tint = MaterialTheme.colorScheme.primary,
                         )
                         Spacer(modifier = Modifier.width(12.dp))
-                        Text(
-                            text = friend.name,
-                            style = MaterialTheme.typography.bodyLarge,
-                            fontWeight = FontWeight.SemiBold,
-                            modifier = Modifier.weight(1f),
-                        )
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = friend.name,
+                                style = MaterialTheme.typography.bodyLarge,
+                                fontWeight = FontWeight.SemiBold,
+                            )
+                            if (!friend.alias.isNullOrBlank() || !friend.cbu.isNullOrBlank()) {
+                                Text(
+                                    text = "Alias: ${friend.alias ?: "-"} • CBU: ${friend.cbu ?: "-"}",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
+                                )
+                            }
+                        }
                         if (!state.isClosed) {
                             IconButton(onClick = { viewModel.removeFriend(friend.id) }) {
                                 Icon(
