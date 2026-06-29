@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -19,7 +18,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Home
@@ -32,7 +30,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -50,7 +47,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.mitimiti.app.domain.model.SplitType
 import com.mitimiti.app.domain.model.TableType
-import com.mitimiti.app.presentation.components.WizardProgressBar
 import com.mitimiti.app.presentation.theme.ClayButton
 import com.mitimiti.app.presentation.theme.claymorphic
 
@@ -77,54 +73,8 @@ fun SummaryScreen(
     }
 
     Column(
-        modifier =
-            modifier
-                .fillMaxSize()
-                .safeDrawingPadding()
-                .padding(16.dp),
+        modifier = modifier.fillMaxSize(),
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Start,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            TextButton(
-                onClick = onBack,
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.Default.ArrowBack,
-                        contentDescription = "Atrás",
-                        modifier = Modifier.size(16.dp),
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text("Volver a Cargar Gastos")
-                }
-            }
-        }
-        Spacer(modifier = Modifier.height(4.dp))
-
-        Text(
-            text = "Resumen de la Vaquita",
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Black,
-            color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.align(Alignment.CenterHorizontally),
-        )
-
-        // Wizard Progress Tracker (Step 2) - Clickable tabs
-        WizardProgressBar(
-            currentStep = 2,
-            onStepClick = { step ->
-                when (step) {
-                    0 -> onNavigateToLobby(tableId)
-                    1 -> onNavigateToExpenses(tableId)
-                }
-            },
-        )
-
-        Spacer(modifier = Modifier.height(10.dp))
-
         // Split Strategy Toggle Selector
         if (state.isClosed) {
             val strategyText = if (state.splitType == SplitType.EQUAL) "Partes Iguales" else "Consumo"

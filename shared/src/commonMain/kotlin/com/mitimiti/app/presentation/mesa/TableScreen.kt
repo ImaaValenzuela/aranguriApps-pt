@@ -10,14 +10,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
@@ -74,50 +72,9 @@ fun TableScreen(
     }
 
     Column(
-        modifier =
-            modifier
-                .fillMaxSize()
-                .safeDrawingPadding()
-                .padding(16.dp),
+        modifier = modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        // Top Header
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            TextButton(onClick = onBack) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.Default.ArrowBack,
-                        contentDescription = "Atrás",
-                        modifier = Modifier.size(16.dp),
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text("Mis Juntadas")
-                }
-            }
-            Text(
-                text = "Lobby de la Juntada",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-            )
-        }
-
-        // Wizard Progress Tracker (Step 0) - Clickable tabs
-        com.mitimiti.app.presentation.components.WizardProgressBar(
-            currentStep = 0,
-            onStepClick = { step ->
-                when (step) {
-                    1 -> onNavigateToExpenses(tableId)
-                    2 -> onNavigateToSummary(tableId)
-                }
-            },
-        )
-
-        Spacer(modifier = Modifier.height(10.dp))
-
         // Claymorphic Juntada Detail Card
         Box(
             modifier =

@@ -156,6 +156,15 @@ class SummaryViewModel(
             appendLine("Propina del Mozo: $${summary.totalTip.format(2)}")
             appendLine("Extras/Cubiertos: $${summary.totalExtra.format(2)}")
             appendLine("Total de la Vaquita: $${summary.total.format(2)}")
+
+            val alias = com.mitimiti.app.presentation.perfil.AppSettings.alias.value
+            val cbu = com.mitimiti.app.presentation.perfil.AppSettings.cbu.value
+            if (alias.isNotBlank() || cbu.isNotBlank()) {
+                appendLine("---------------------------------")
+                appendLine("Datos para Transferencia:")
+                if (alias.isNotBlank()) appendLine("  Alias: $alias")
+                if (cbu.isNotBlank()) appendLine("  CBU/CVU: $cbu")
+            }
         }
     }
 

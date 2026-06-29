@@ -6,9 +6,11 @@ import com.mitimiti.app.domain.model.Friend
 import com.mitimiti.app.domain.model.SplitType
 import com.mitimiti.app.domain.model.Table
 import com.mitimiti.app.domain.model.TableType
+import com.mitimiti.app.domain.model.UserProfile
 import com.mitimiti.app.domain.repository.AuthRepository
 import com.mitimiti.app.domain.repository.RealtimeSyncRepository
 import com.mitimiti.app.domain.repository.TableRepository
+import com.mitimiti.app.presentation.perfil.AppSettings
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -43,6 +45,7 @@ class TableViewModel(
 
     private var observeJob: Job? = null
     private var userTablesJob: Job? = null
+    private var settingsSyncJob: Job? = null
 
     fun observeUserTables() {
         val userId = authRepository.currentUser?.uid ?: return
@@ -53,6 +56,61 @@ class TableViewModel(
                     _tables.value = list
                 }
             }
+        observeSettingsAndFriends()
+    }
+
+    fun observeSettingsAndFriends() {
+        val userId = authRepository.currentUser?.uid ?: return
+        settingsSyncJob?.cancel()
+        settingsSyncJob =
+            viewModelScope.launch {
+                launch {
+                    tableRepository.observeUserProfile(userId).collect { profile ->
+                        if (profile != null) {
+                            AppSettings.updateAlias(profile.alias)
+                            AppSettings.updateCbu(profile.cbu)
+                        }
+                    }
+                }
+                launch {
+                    tableRepository.observeFrequentFriends(userId).collect { list ->
+                        if (list.isNotEmpty()) {
+                            AppSettings.setFrequentFriends(list)
+                        }
+                    }
+                }
+            }
+    }
+
+    fun saveUserProfile(
+        alias: String,
+        cbu: String,
+    ) {
+        val userId = authRepository.currentUser?.uid ?: return
+        AppSettings.updateAlias(alias)
+        AppSettings.updateCbu(cbu)
+        viewModelScope.launch {
+            tableRepository.saveUserProfile(userId, UserProfile(alias, cbu))
+        }
+    }
+
+    fun addFrequentFriend(name: String) {
+        val trimmed = name.trim()
+        if (trimmed.isEmpty()) return
+        AppSettings.addFriend(trimmed)
+        val userId = authRepository.currentUser?.uid ?: return
+        viewModelScope.launch {
+            tableRepository.saveFrequentFriends(userId, AppSettings.frequentFriends.value)
+        }
+    }
+
+    fun removeFrequentFriend(name: String) {
+        val trimmed = name.trim()
+        AppSettings.removeFriend(trimmed)
+        val userId = authRepository.currentUser?.uid ?: return
+        viewModelScope.launch {
+            tableRepository.saveFrequentFriends(userId, AppSettings.frequentFriends.value)
+        }
     }
 
     fun resetTableState() {
@@ -232,6 +290,7 @@ class TableViewModel(
     override fun onCleared() {
         observeJob?.cancel()
         userTablesJob?.cancel()
+        settingsSyncJob?.cancel()
         super.onCleared()
     }
 }

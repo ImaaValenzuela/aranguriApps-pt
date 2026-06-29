@@ -46,4 +46,33 @@ class FirebaseTableRepository(
     ) {
         dataSource.saveUserTableRelation(userId, tableId)
     }
+
+    override suspend fun saveUserProfile(
+        userId: String,
+        profile: com.mitimiti.app.domain.model.UserProfile,
+    ) {
+        val dto = com.mitimiti.app.data.model.UserProfileDto(alias = profile.alias, cbu = profile.cbu)
+        dataSource.saveUserProfile(userId, dto)
+    }
+
+    override fun observeUserProfile(userId: String): Flow<com.mitimiti.app.domain.model.UserProfile?> {
+        return dataSource.observeUserProfile(userId).map { dto ->
+            if (dto != null) {
+                com.mitimiti.app.domain.model.UserProfile(alias = dto.alias, cbu = dto.cbu)
+            } else {
+                null
+            }
+        }
+    }
+
+    override suspend fun saveFrequentFriends(
+        userId: String,
+        friends: List<String>,
+    ) {
+        dataSource.saveFrequentFriends(userId, friends)
+    }
+
+    override fun observeFrequentFriends(userId: String): Flow<List<String>> {
+        return dataSource.observeFrequentFriends(userId)
+    }
 }

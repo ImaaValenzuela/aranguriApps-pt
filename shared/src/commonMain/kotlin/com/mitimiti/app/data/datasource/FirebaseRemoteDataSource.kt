@@ -1,6 +1,7 @@
 package com.mitimiti.app.data.datasource
 
 import com.mitimiti.app.data.model.TableDto
+import com.mitimiti.app.data.model.UserProfileDto
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.database.database
 import kotlinx.coroutines.flow.Flow
@@ -60,6 +61,56 @@ class FirebaseRemoteDataSource {
                 try {
                     val map = snapshot.value<Map<String, Boolean>>()
                     map.keys.toList()
+                } catch (e: Exception) {
+                    emptyList()
+                }
+            } else {
+                emptyList()
+            }
+        }
+    }
+
+    suspend fun saveUserProfile(
+        userId: String,
+        profile: UserProfileDto,
+    ) {
+        try {
+            database.reference("users").child(userId).child("profile").setValue(profile)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    fun observeUserProfile(userId: String): Flow<UserProfileDto?> {
+        return database.reference("users").child(userId).child("profile").valueEvents.map { snapshot ->
+            if (snapshot.exists) {
+                try {
+                    snapshot.value<UserProfileDto>()
+                } catch (e: Exception) {
+                    null
+                }
+            } else {
+                null
+            }
+        }
+    }
+
+    suspend fun saveFrequentFriends(
+        userId: String,
+        friends: List<String>,
+    ) {
+        try {
+            database.reference("users").child(userId).child("frequent_friends").setValue(friends)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    fun observeFrequentFriends(userId: String): Flow<List<String>> {
+        return database.reference("users").child(userId).child("frequent_friends").valueEvents.map { snapshot ->
+            if (snapshot.exists) {
+                try {
+                    snapshot.value<List<String>>()
                 } catch (e: Exception) {
                     emptyList()
                 }
