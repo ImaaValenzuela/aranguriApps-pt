@@ -39,6 +39,7 @@ kotlin {
         androidMain.dependencies {
             implementation(project.dependencies.platform("com.google.firebase:firebase-bom:33.1.1"))
             implementation(libs.compose.uiToolingPreview)
+            implementation(libs.play.services.code.scanner)
         }
         commonMain.dependencies {
             implementation(libs.compose.runtime)
@@ -54,6 +55,7 @@ kotlin {
             implementation(libs.firebase.auth)
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.jetbrains.navigation.compose)
+            implementation(libs.qrcode.kotlin)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

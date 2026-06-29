@@ -17,6 +17,7 @@ ktlint = "12.1.1"
 kover = "0.9.8"
 firebase-kotlin = "2.1.0" 
 jetbrains-navigation = "2.8.0-alpha10"
+qrcode = "4.5.0"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -42,6 +43,8 @@ firebase-auth = { module = "dev.gitlive:firebase-auth", version.ref = "firebase-
 play-services-auth = { module = "com.google.android.gms:play-services-auth", version = "21.2.0" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version = "1.8.0" }
 jetbrains-navigation-compose = { module = "org.jetbrains.androidx.navigation:navigation-compose", version.ref = "jetbrains-navigation" }
+qrcode-kotlin = { module = "io.github.g0dkar:qrcode-kotlin", version.ref = "qrcode" }
+play-services-code-scanner = { module = "com.google.android.gms:play-services-code-scanner", version = "16.1.0" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
