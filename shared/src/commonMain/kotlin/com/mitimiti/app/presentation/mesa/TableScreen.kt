@@ -78,346 +78,176 @@ fun TableScreen(
     }
 
     Column(
-        modifier = modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = modifier.fillMaxSize().padding(16.dp),
     ) {
-        // Claymorphic Juntada Detail Card
-        Box(
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .claymorphic(
-                        backgroundColor = if (isDark) MaterialTheme.colorScheme.surface else Color.White,
-                        cornerRadius = 24.dp,
-                        elevation = 4.dp,
-                        isDark = isDark,
-                    ),
+        LazyColumn(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            Column(
-                modifier = Modifier.padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Text(
-                    text = "Juntada: ${state.tableName}",
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.Black,
-                    color = MaterialTheme.colorScheme.primary,
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center,
+            item {
+                // Claymorphic Juntada Detail Card
+                Box(
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .claymorphic(
+                                backgroundColor = if (isDark) MaterialTheme.colorScheme.surface else Color.White,
+                                cornerRadius = 24.dp,
+                                elevation = 4.dp,
+                                isDark = isDark,
+                            ),
                 ) {
-                    Icon(
-                        imageVector =
-                            if (state.type == TableType.RESTAURANT) {
-                                Icons.Default.ShoppingCart
-                            } else {
-                                Icons.Default.Home
-                            },
-                        contentDescription = null,
-                        modifier = Modifier.size(16.dp),
-                        tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = if (state.type == TableType.RESTAURANT) "Restaurante" else "Asado / Casa",
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),
-                    )
-                }
-
-                if (state.isClosed) {
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Box(
-                        modifier =
-                            Modifier
-                                .claymorphic(
-                                    backgroundColor = MaterialTheme.colorScheme.errorContainer,
-                                    cornerRadius = 12.dp,
-                                    elevation = 2.dp,
-                                    isDark = isDark,
-                                )
-                                .padding(horizontal = 8.dp, vertical = 4.dp),
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
+                        Text(
+                            text = "Juntada: ${state.tableName}",
+                            style = MaterialTheme.typography.headlineSmall,
+                            fontWeight = FontWeight.Black,
+                            color = MaterialTheme.colorScheme.primary,
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center,
+                        ) {
+                            Icon(
+                                imageVector =
+                                    if (state.type == TableType.RESTAURANT) {
+                                        Icons.Default.ShoppingCart
+                                    } else {
+                                        Icons.Default.Home
+                                    },
+                                contentDescription = null,
+                                modifier = Modifier.size(16.dp),
+                                tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = if (state.type == TableType.RESTAURANT) "Restaurante" else "Asado / Casa",
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.Medium,
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),
+                            )
+                        }
+
+                        if (state.isClosed) {
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Box(
+                                modifier =
+                                    Modifier
+                                        .claymorphic(
+                                            backgroundColor = MaterialTheme.colorScheme.errorContainer,
+                                            cornerRadius = 12.dp,
+                                            elevation = 2.dp,
+                                            isDark = isDark,
+                                        )
+                                        .padding(horizontal = 8.dp, vertical = 4.dp),
+                            ) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(
+                                        imageVector = Icons.Default.Lock,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(14.dp),
+                                        tint = MaterialTheme.colorScheme.onErrorContainer,
+                                    )
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text(
+                                        text = "LA JUNTADA SE CERRÓ",
+                                        color = MaterialTheme.colorScheme.onErrorContainer,
+                                        style = MaterialTheme.typography.labelSmall,
+                                        fontWeight = FontWeight.Bold,
+                                    )
+                                }
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(12.dp))
+
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(
                                 imageVector = Icons.Default.Lock,
                                 contentDescription = null,
                                 modifier = Modifier.size(14.dp),
-                                tint = MaterialTheme.colorScheme.onErrorContainer,
+                                tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                             )
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
-                                text = "LA JUNTADA SE CERRÓ",
-                                color = MaterialTheme.colorScheme.onErrorContainer,
+                                text = "CÓDIGO DE ACCESO",
                                 style = MaterialTheme.typography.labelSmall,
-                                fontWeight = FontWeight.Bold,
+                                fontWeight = FontWeight.SemiBold,
                             )
                         }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.Default.Lock,
-                        contentDescription = null,
-                        modifier = Modifier.size(14.dp),
-                        tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = "CÓDIGO DE ACCESO",
-                        style = MaterialTheme.typography.labelSmall,
-                        fontWeight = FontWeight.SemiBold,
-                    )
-                }
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center,
-                ) {
-                    Text(
-                        text = state.tableId,
-                        style = MaterialTheme.typography.displaySmall,
-                        fontWeight = FontWeight.Black,
-                        color = MaterialTheme.colorScheme.primary,
-                    )
-                    Spacer(modifier = Modifier.width(10.dp))
-                    TextButton(
-                        onClick = {
-                            clipboardManager.setText(AnnotatedString(state.tableId))
-                            copyMessageSuccess = true
-                        },
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                imageVector = if (copyMessageSuccess) Icons.Default.Check else Icons.Default.Share,
-                                contentDescription = null,
-                                modifier = Modifier.size(16.dp),
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center,
+                        ) {
+                            Text(
+                                text = state.tableId,
+                                style = MaterialTheme.typography.displaySmall,
+                                fontWeight = FontWeight.Black,
+                                color = MaterialTheme.colorScheme.primary,
                             )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text(if (copyMessageSuccess) "¡Copiado!" else "Copiar Código")
-                        }
-                    }
-                }
-                Spacer(modifier = Modifier.height(12.dp))
-                Box(
-                    modifier =
-                        Modifier
-                            .size(160.dp)
-                            .claymorphic(
-                                backgroundColor = Color.White,
-                                cornerRadius = 16.dp,
-                                elevation = 2.dp,
-                                isDark = false,
-                            )
-                            .padding(12.dp),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    QRCodeView(
-                        text = state.tableId,
-                        modifier = Modifier.fillMaxSize(),
-                    )
-                }
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "Escaneá para unirte al instante",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                    fontWeight = FontWeight.Medium,
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        if (!state.isClosed) {
-            // Claymorphic Add Friend Box
-            Box(
-                modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .claymorphic(
-                            backgroundColor = if (isDark) MaterialTheme.colorScheme.surface else Color.White,
-                            cornerRadius = 24.dp,
-                            elevation = 4.dp,
-                            isDark = isDark,
-                        ),
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Default.Edit,
-                            contentDescription = null,
-                            modifier = Modifier.size(18.dp),
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(
-                            text = "Sumar amigos a la juntada",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                        )
-                    }
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        OutlinedTextField(
-                            value = friendNameInput,
-                            onValueChange = {
-                                friendNameInput = it
-                                errorMessage = null
-                            },
-                            label = { Text("Apodo o @usuario") },
-                            placeholder = { Text("Ej: @santi o Juan") },
-                            modifier = Modifier.weight(1.3f),
-                            singleLine = true,
-                            shape = RoundedCornerShape(16.dp),
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        ClayButton(
-                            onClick = {
-                                val input = friendNameInput.trim()
-                                if (input.startsWith("@") || !input.contains(" ")) {
-                                    val targetUsername = input.removePrefix("@")
-                                    viewModel.addFriendToTableByUsername(
-                                        username = targetUsername,
-                                        onSuccess = {
-                                            friendNameInput = ""
-                                            errorMessage = null
-                                        },
-                                        onError = { error ->
-                                            if (!input.startsWith("@")) {
-                                                viewModel.addFriend(input)
-                                                friendNameInput = ""
-                                                errorMessage = null
-                                            } else {
-                                                errorMessage = error
-                                            }
-                                        },
+                            Spacer(modifier = Modifier.width(10.dp))
+                            TextButton(
+                                onClick = {
+                                    clipboardManager.setText(AnnotatedString(state.tableId))
+                                    copyMessageSuccess = true
+                                },
+                            ) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(
+                                        imageVector = if (copyMessageSuccess) Icons.Default.Check else Icons.Default.Share,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(16.dp),
                                     )
-                                } else {
-                                    viewModel.addFriend(input)
-                                    friendNameInput = ""
-                                    errorMessage = null
-                                }
-                            },
-                            modifier = Modifier.weight(0.7f),
-                            enabled = friendNameInput.isNotEmpty(),
-                            cornerRadius = 16.dp,
-                        ) {
-                            Text("Agregar", fontWeight = FontWeight.Bold)
-                        }
-                    }
-
-                    errorMessage?.let { error ->
-                        Text(
-                            text = error,
-                            color = MaterialTheme.colorScheme.error,
-                            style = MaterialTheme.typography.bodySmall,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.padding(top = 4.dp),
-                        )
-                    }
-
-                    if (frequentFriends.isNotEmpty()) {
-                        Spacer(modifier = Modifier.height(12.dp))
-                        Text(
-                            text = "Tus amigos frecuentes (tocar para sumar):",
-                            style = MaterialTheme.typography.labelMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                        Spacer(modifier = Modifier.height(6.dp))
-                        LazyRow(
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            modifier = Modifier.fillMaxWidth(),
-                        ) {
-                            items(frequentFriends) { friend ->
-                                val alreadyInTable =
-                                    state.friends.any {
-                                        it.name.equals(
-                                            friend.username,
-                                            ignoreCase = true,
-                                        )
-                                    }
-                                Box(
-                                    modifier =
-                                        Modifier
-                                            .claymorphic(
-                                                backgroundColor =
-                                                    if (alreadyInTable) {
-                                                        MaterialTheme.colorScheme.primaryContainer
-                                                    } else if (isDark) {
-                                                        MaterialTheme.colorScheme.surfaceVariant
-                                                    } else {
-                                                        Color(0xFFF5F5F5)
-                                                    },
-                                                cornerRadius = 12.dp,
-                                                elevation = 1.dp,
-                                                isDark = isDark,
-                                            )
-                                            .clickable(enabled = !alreadyInTable) {
-                                                viewModel.addFrequentFriendToTable(friend)
-                                            }
-                                            .padding(horizontal = 10.dp, vertical = 6.dp),
-                                ) {
-                                    Row(verticalAlignment = Alignment.CenterVertically) {
-                                        Icon(
-                                            imageVector = Icons.Default.Person,
-                                            contentDescription = null,
-                                            modifier = Modifier.size(14.dp),
-                                            tint =
-                                                if (alreadyInTable) {
-                                                    MaterialTheme.colorScheme.primary
-                                                } else {
-                                                    MaterialTheme.colorScheme.onSurfaceVariant
-                                                },
-                                        )
-                                        Spacer(modifier = Modifier.width(4.dp))
-                                        Text(
-                                            text = "@${friend.username}",
-                                            style = MaterialTheme.typography.labelLarge,
-                                            fontWeight = FontWeight.SemiBold,
-                                            color =
-                                                if (alreadyInTable) {
-                                                    MaterialTheme.colorScheme.onPrimaryContainer
-                                                } else {
-                                                    MaterialTheme.colorScheme.onSurface
-                                                },
-                                        )
-                                    }
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text(if (copyMessageSuccess) "¡Copiado!" else "Copiar Código")
                                 }
                             }
                         }
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Box(
+                            modifier =
+                                Modifier
+                                    .size(160.dp)
+                                    .claymorphic(
+                                        backgroundColor = Color.White,
+                                        cornerRadius = 16.dp,
+                                        elevation = 2.dp,
+                                        isDark = false,
+                                    )
+                                    .padding(12.dp),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            QRCodeView(
+                                text = state.tableId,
+                                modifier = Modifier.fillMaxSize(),
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "Escaneá para unirte al instante",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                            fontWeight = FontWeight.Medium,
+                        )
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
-        }
+            item {
+                Text(
+                    text = "Amigos en la juntada:",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(top = 8.dp),
+                )
+            }
 
-        Text(
-            text = "Amigos en la juntada:",
-            style = MaterialTheme.typography.titleSmall,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.align(Alignment.Start),
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        // Claymorphic Friends List
-        LazyColumn(
-            modifier =
-                Modifier
-                    .weight(1f)
-                    .fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
-        ) {
             items(state.friends) { friend ->
                 Box(
                     modifier =
@@ -467,9 +297,200 @@ fun TableScreen(
                     }
                 }
             }
+
+            if (!state.isClosed) {
+                item {
+                    // Claymorphic Add Friend Box
+                    Box(
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .claymorphic(
+                                    backgroundColor = if (isDark) MaterialTheme.colorScheme.surface else Color.White,
+                                    cornerRadius = 24.dp,
+                                    elevation = 4.dp,
+                                    isDark = isDark,
+                                )
+                                .padding(top = 8.dp),
+                    ) {
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    imageVector = Icons.Default.Edit,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(18.dp),
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = "Sumar amigos a la juntada",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold,
+                                )
+                            }
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                OutlinedTextField(
+                                    value = friendNameInput,
+                                    onValueChange = {
+                                        friendNameInput = it
+                                        errorMessage = null
+                                    },
+                                    label = { Text("Apodo o @usuario") },
+                                    placeholder = { Text("Ej: @santi o Juan") },
+                                    modifier = Modifier.weight(1.2f),
+                                    singleLine = true,
+                                    shape = RoundedCornerShape(16.dp),
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                ClayButton(
+                                    onClick = {
+                                        val input = friendNameInput.trim()
+                                        if (input.startsWith("@") || !input.contains(" ")) {
+                                            val targetUsername = input.removePrefix("@")
+                                            viewModel.addFriendToTableByUsername(
+                                                username = targetUsername,
+                                                onSuccess = {
+                                                    friendNameInput = ""
+                                                    errorMessage = null
+                                                },
+                                                onError = { error ->
+                                                    if (!input.startsWith("@")) {
+                                                        viewModel.addFriend(input)
+                                                        friendNameInput = ""
+                                                        errorMessage = null
+                                                    } else {
+                                                        errorMessage = error
+                                                    }
+                                                },
+                                            )
+                                        } else {
+                                            viewModel.addFriend(input)
+                                            friendNameInput = ""
+                                            errorMessage = null
+                                        }
+                                    },
+                                    modifier = Modifier.weight(0.8f),
+                                    enabled = friendNameInput.isNotEmpty(),
+                                    cornerRadius = 16.dp,
+                                    horizontalPadding = 8.dp,
+                                ) {
+                                    Text(
+                                        text = "Agregar",
+                                        fontWeight = FontWeight.Bold,
+                                        maxLines = 1,
+                                        style = MaterialTheme.typography.bodyMedium
+                                    )
+                                }
+
+                            }
+
+                            errorMessage?.let { error ->
+                                Text(
+                                    text = error,
+                                    color = MaterialTheme.colorScheme.error,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.padding(top = 4.dp),
+                                )
+                            }
+
+                            if (frequentFriends.isNotEmpty()) {
+                                Spacer(modifier = Modifier.height(12.dp))
+                                Text(
+                                    text = "Tus amigos frecuentes:",
+                                    style = MaterialTheme.typography.labelMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                                Spacer(modifier = Modifier.height(6.dp))
+                                LazyRow(
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    modifier = Modifier.fillMaxWidth(),
+                                ) {
+                                    items(frequentFriends) { friend ->
+                                        val alreadyInTable =
+                                            state.friends.any {
+                                                it.name.equals(
+                                                    friend.username,
+                                                    ignoreCase = true,
+                                                )
+                                            }
+                                        Box(
+                                            modifier =
+                                                Modifier
+                                                    .claymorphic(
+                                                        backgroundColor =
+                                                            if (alreadyInTable) {
+                                                                MaterialTheme.colorScheme.primaryContainer
+                                                            } else if (isDark) {
+                                                                MaterialTheme.colorScheme.surfaceVariant
+                                                            } else {
+                                                                Color(0xFFF5F5F5)
+                                                            },
+                                                        cornerRadius = 12.dp,
+                                                        elevation = 1.dp,
+                                                        isDark = isDark,
+                                                    )
+                                                    .clickable(enabled = !alreadyInTable) {
+                                                        viewModel.addFrequentFriendToTable(friend)
+                                                    }
+                                                    .padding(horizontal = 10.dp, vertical = 6.dp),
+                                        ) {
+                                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                                Icon(
+                                                    imageVector = Icons.Default.Person,
+                                                    contentDescription = null,
+                                                    modifier = Modifier.size(14.dp),
+                                                    tint =
+                                                        if (alreadyInTable) {
+                                                            MaterialTheme.colorScheme.primary
+                                                        } else {
+                                                            MaterialTheme.colorScheme.onSurfaceVariant
+                                                        },
+                                                )
+                                                Spacer(modifier = Modifier.width(4.dp))
+                                                Text(
+                                                    text = "@${friend.username}",
+                                                    style = MaterialTheme.typography.labelLarge,
+                                                    fontWeight = FontWeight.SemiBold,
+                                                    color =
+                                                        if (alreadyInTable) {
+                                                            MaterialTheme.colorScheme.onPrimaryContainer
+                                                        } else {
+                                                            MaterialTheme.colorScheme.onSurface
+                                                        },
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (state.isLoading) {
+                item {
+                    Box(
+                        modifier = Modifier.fillMaxWidth().padding(16.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
+                    }
+                }
+            }
+            
+            // Add a spacer at the end for comfortable scrolling above the fixed bottom button
+            item {
+                Spacer(modifier = Modifier.height(16.dp))
+            }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
         ClayButton(
             onClick = { onNavigateToExpenses(state.tableId) },
@@ -491,11 +512,6 @@ fun TableScreen(
                     modifier = Modifier.size(16.dp),
                 )
             }
-        }
-
-        if (state.isLoading) {
-            Spacer(modifier = Modifier.height(16.dp))
-            CircularProgressIndicator()
         }
     }
 }

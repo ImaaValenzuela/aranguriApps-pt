@@ -1,5 +1,6 @@
 package com.mitimiti.app.presentation.perfil
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -19,6 +20,7 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -32,18 +34,24 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.mitimiti.app.presentation.theme.ClayButton
 import com.mitimiti.app.presentation.theme.claymorphic
+import com.mitimiti.app.toImageBitmap
+import com.mitimiti.app.rememberImagePicker
+
 
 @Composable
 @Suppress("FunctionNaming", "LongMethod")
 fun ProfileScreen(
     userEmail: String?,
+    avatarBytes: ByteArray?,
     onSaveProfile: (alias: String, cbu: String) -> Unit,
+    onUploadAvatar: (ByteArray) -> Unit,
     onSignOut: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -54,6 +62,21 @@ fun ProfileScreen(
     var aliasInput by remember(alias) { mutableStateOf(alias) }
     var cbuInput by remember(cbu) { mutableStateOf(cbu) }
     var showSavedMessage by remember { mutableStateOf(false) }
+
+    val imagePicker = rememberImagePicker { bytes ->
+        onUploadAvatar(bytes)
+    }
+
+    val avatarBitmap = remember(avatarBytes) {
+        avatarBytes?.let {
+            try {
+                it.toImageBitmap()
+            } catch (e: Exception) {
+                e.printStackTrace()
+                null
+            }
+        }
+    }
 
     Column(
         modifier =
@@ -89,23 +112,59 @@ fun ProfileScreen(
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 Box(
-                    modifier =
-                        Modifier
-                            .size(60.dp)
-                            .claymorphic(
-                                backgroundColor = MaterialTheme.colorScheme.primaryContainer,
-                                cornerRadius = 30.dp,
-                                elevation = 2.dp,
-                                isDark = isDark,
-                            ),
-                    contentAlignment = Alignment.Center,
+                    modifier = Modifier.size(72.dp)
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Person,
-                        contentDescription = "Avatar",
-                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                        modifier = Modifier.size(32.dp),
-                    )
+                    Box(
+                        modifier =
+                            Modifier
+                                .size(72.dp)
+                                .claymorphic(
+                                    backgroundColor = MaterialTheme.colorScheme.primaryContainer,
+                                    cornerRadius = 36.dp,
+                                    elevation = 2.dp,
+                                    isDark = isDark,
+                                )
+                                .clickable { imagePicker() },
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        if (avatarBitmap != null) {
+                            androidx.compose.foundation.Image(
+                                bitmap = avatarBitmap,
+                                contentDescription = "Avatar",
+                                modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(36.dp)),
+                                contentScale = androidx.compose.ui.layout.ContentScale.Crop,
+                            )
+                        } else {
+                            Icon(
+                                imageVector = Icons.Default.Person,
+                                contentDescription = "Avatar",
+                                tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                                modifier = Modifier.size(36.dp),
+                            )
+                        }
+                    }
+                    // Edit pencil icon overlay
+                    Box(
+                        modifier =
+                            Modifier
+                                .size(24.dp)
+                                .align(Alignment.BottomEnd)
+                                .claymorphic(
+                                    backgroundColor = MaterialTheme.colorScheme.primary,
+                                    cornerRadius = 12.dp,
+                                    elevation = 3.dp,
+                                    isDark = isDark,
+                                )
+                                .clickable { imagePicker() },
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Edit,
+                            contentDescription = "Editar Avatar",
+                            tint = Color.White,
+                            modifier = Modifier.size(12.dp),
+                        )
+                    }
                 }
                 Spacer(modifier = Modifier.width(16.dp))
                 Column {

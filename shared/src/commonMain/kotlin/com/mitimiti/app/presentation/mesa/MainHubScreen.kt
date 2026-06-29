@@ -105,8 +105,9 @@ fun MainHubScreen(
     onSignOut: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val state by viewModel.uiState.collectAsState()
+        val state by viewModel.uiState.collectAsState()
     val tables by viewModel.tables.collectAsState()
+    val avatarBytes by viewModel.avatarBytes.collectAsState()
     val isDark = isSystemInDarkTheme()
 
     var selectedTab by remember { mutableStateOf(0) } // 0: Home, 1: Friends, 2: Plus (Overlay), 3: Stats, 4: Profile
@@ -175,7 +176,9 @@ fun MainHubScreen(
                 4 ->
                     ProfileScreen(
                         userEmail = userEmail,
+                        avatarBytes = avatarBytes,
                         onSaveProfile = { alias, cbu -> viewModel.saveUserProfile(alias, cbu) },
+                        onUploadAvatar = { bytes -> viewModel.uploadAvatar(bytes) },
                         onSignOut = onSignOut,
                     )
             }

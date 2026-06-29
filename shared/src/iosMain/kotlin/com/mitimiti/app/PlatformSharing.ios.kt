@@ -5,6 +5,8 @@ package com.mitimiti.app
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import kotlinx.cinterop.useContents
+import kotlinx.cinterop.usePinned
+import kotlinx.cinterop.addressOf
 import platform.AVFoundation.AVCaptureConnection
 import platform.AVFoundation.AVCaptureDevice
 import platform.AVFoundation.AVCaptureDeviceInput
@@ -190,3 +192,49 @@ private class QRScannerViewController(val onScan: (String) -> Unit) :
         captureSession?.stopRunning()
     }
 }
+
+@OptIn(kotlinx.cinterop.ExperimentalForeignApi::class)
+@Composable
+actual fun rememberImagePicker(onImagePicked: (ByteArray) -> Unit): () -> Unit {
+    val delegate = remember {
+        object : platform.darwin.NSObject(), platform.UIKit.UIImagePickerControllerDelegateProtocol, platform.UIKit.UINavigationControllerDelegateProtocol {
+            override fun imagePickerController(
+                picker: platform.UIKit.UIImagePickerController,
+                didFinishPickingMediaWithInfo: Map<Any?, *>
+            ) {
+                val image = didFinishPickingMediaWithInfo[platform.UIKit.UIImagePickerControllerOriginalImage] as? platform.UIKit.UIImage
+                if (image != null) {
+                    val data = platform.UIKit.UIImageJPEGRepresentation(image, 0.8)
+                    if (data != null) {
+                        val bytes = ByteArray(data.length.toInt())
+                        val pointer = data.bytes
+                        if (pointer != null) {
+                            bytes.usePinned { pinned ->
+                                platform.posix.memcpy(pinned.addressOf(0), pointer, data.length)
+                            }
+                            onImagePicked(bytes)
+                        }
+                    }
+                }
+                picker.dismissViewControllerAnimated(true, completion = null)
+            }
+
+            override fun imagePickerControllerDidCancel(picker: platform.UIKit.UIImagePickerController) {
+                picker.dismissViewControllerAnimated(true, completion = null)
+            }
+        }
+    }
+    return remember {
+        {
+            val rootViewController = platform.UIKit.UIApplication.sharedApplication.keyWindow?.rootViewController
+            if (rootViewController != null) {
+                val picker = platform.UIKit.UIImagePickerController().apply {
+                    this.sourceType = platform.UIKit.UIImagePickerControllerSourceType.UIImagePickerControllerSourceTypePhotoLibrary
+                    this.delegate = delegate
+                }
+                rootViewController.presentViewController(picker, animated = true, completion = null)
+            }
+        }
+    }
+}
+

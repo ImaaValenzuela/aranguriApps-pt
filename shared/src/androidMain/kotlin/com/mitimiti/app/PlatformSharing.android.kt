@@ -8,6 +8,9 @@ import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.codescanner.GmsBarcodeScannerOptions
 import com.google.mlkit.vision.codescanner.GmsBarcodeScanning
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+
 @Composable
 actual fun rememberTextSharer(): (String) -> Unit {
     val context = LocalContext.current
@@ -46,5 +49,27 @@ actual fun rememberQRScanner(onScanResult: (String) -> Unit): () -> Unit {
                     // Fail silently or log
                 }
         }
+    }
+}
+
+@Composable
+actual fun rememberImagePicker(onImagePicked: (ByteArray) -> Unit): () -> Unit {
+    val context = LocalContext.current
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri ->
+        uri?.let {
+            try {
+                context.contentResolver.openInputStream(uri)?.use { inputStream ->
+                    val bytes = inputStream.readBytes()
+                    onImagePicked(bytes)
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+    return remember {
+        { launcher.launch("image/*") }
     }
 }
