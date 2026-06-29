@@ -19,7 +19,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowForward
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
@@ -41,7 +40,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalClipboardManager
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -49,6 +47,7 @@ import com.mitimiti.app.domain.model.SplitType
 import com.mitimiti.app.domain.model.TableType
 import com.mitimiti.app.presentation.theme.ClayButton
 import com.mitimiti.app.presentation.theme.claymorphic
+import com.mitimiti.app.rememberTextSharer
 
 @Composable
 @Suppress("FunctionNaming", "LongMethod")
@@ -64,6 +63,7 @@ fun SummaryScreen(
     val state by viewModel.uiState.collectAsState()
     val clipboardManager = LocalClipboardManager.current
     val isDark = isSystemInDarkTheme()
+    val textSharer = rememberTextSharer()
 
     val emeraldGreen = Color(0xFF2E7D32)
     val coralRed = Color(0xFFD32F2F)
@@ -489,30 +489,24 @@ fun SummaryScreen(
         Row(modifier = Modifier.fillMaxWidth()) {
             ClayButton(
                 onClick = {
-                    clipboardManager.setText(AnnotatedString(state.formattedShareText))
-                    viewModel.onClipboardCopied()
+                    textSharer(state.formattedShareText)
                 },
                 modifier = Modifier.weight(1.2f),
-                backgroundColor =
-                    if (state.isCopied) {
-                        MaterialTheme.colorScheme.secondary
-                    } else {
-                        MaterialTheme.colorScheme.primary
-                    },
-                contentColor = if (state.isCopied) Color.Black else MaterialTheme.colorScheme.onPrimary,
+                backgroundColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary,
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.Center,
                 ) {
                     Icon(
-                        imageVector = if (state.isCopied) Icons.Default.Check else Icons.Default.Share,
-                        contentDescription = null,
+                        imageVector = Icons.Default.Share,
+                        contentDescription = "Compartir",
                         modifier = Modifier.size(16.dp),
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
-                        text = if (state.isCopied) "¡Copiado!" else "Copiar Resumen",
+                        text = "Compartir Resumen",
                         fontWeight = FontWeight.Bold,
                     )
                 }

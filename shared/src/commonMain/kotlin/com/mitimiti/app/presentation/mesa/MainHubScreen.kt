@@ -47,6 +47,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -57,6 +59,41 @@ import com.mitimiti.app.presentation.perfil.ProfileScreen
 import com.mitimiti.app.presentation.stats.StatsScreen
 import com.mitimiti.app.presentation.theme.ClayButton
 import com.mitimiti.app.presentation.theme.claymorphic
+import com.mitimiti.app.rememberQRScanner
+
+private val CameraIcon: ImageVector =
+    ImageVector.Builder(
+        name = "CameraIcon",
+        defaultWidth = 24.dp,
+        defaultHeight = 24.dp,
+        viewportWidth = 24f,
+        viewportHeight = 24f,
+    ).apply {
+        path(fill = androidx.compose.ui.graphics.SolidColor(Color.Black)) {
+            moveTo(12f, 12f)
+            arcToRelative(3f, 3f, 0f, isMoreThanHalf = true, isPositiveArc = true, 0f, 6f)
+            arcToRelative(3f, 3f, 0f, isMoreThanHalf = false, isPositiveArc = true, 0f, -6f)
+            close()
+            moveTo(9f, 2f)
+            lineTo(7.17f, 4f)
+            lineTo(4f, 4f)
+            arcTo(2f, 2f, 0f, isMoreThanHalf = false, isPositiveArc = false, 2f, 6f)
+            verticalLineTo(18f)
+            arcTo(2f, 2f, 0f, isMoreThanHalf = false, isPositiveArc = false, 4f, 20f)
+            horizontalLineTo(20f)
+            arcTo(2f, 2f, 0f, isMoreThanHalf = false, isPositiveArc = false, 22f, 18f)
+            verticalLineTo(6f)
+            arcTo(2f, 2f, 0f, isMoreThanHalf = false, isPositiveArc = false, 20f, 4f)
+            horizontalLineTo(16.83f)
+            lineTo(15f, 2f)
+            horizontalLineTo(9f)
+            close()
+            moveTo(12f, 17f)
+            arcTo(5f, 5f, 0f, isMoreThanHalf = true, isPositiveArc = false, 12f, 7f)
+            arcTo(5f, 5f, 0f, isMoreThanHalf = false, isPositiveArc = false, 12f, 17f)
+            close()
+        }
+    }.build()
 
 @Composable
 @Suppress("LongMethod", "FunctionNaming", "ComplexMethod")
@@ -86,6 +123,17 @@ fun MainHubScreen(
     // Form states for Join Table
     var joinCodeInput by remember { mutableStateOf("") }
     var joinNicknameInput by remember { mutableStateOf("") }
+
+    val qrScanner =
+        rememberQRScanner { result ->
+            joinCodeInput =
+                when {
+                    result.contains("tableId=") -> result.substringAfter("tableId=").substringBefore("&")
+                    result.contains("/table_lobby/") -> result.substringAfter("/table_lobby/").substringBefore("/")
+                    result.contains("/table/") -> result.substringAfter("/table/").substringBefore("/")
+                    else -> result.trim()
+                }
+        }
 
     LaunchedEffect(Unit) {
         viewModel.observeUserTables()
@@ -547,16 +595,38 @@ fun MainHubScreen(
                     } else {
                         // Join Table Form
                         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                            OutlinedTextField(
-                                value = joinCodeInput,
-                                onValueChange = { joinCodeInput = it },
-                                label = { Text("Código de la Juntada (6 dígitos)") },
-                                placeholder = { Text("Ej: 492041") },
-                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            Row(
                                 modifier = Modifier.fillMaxWidth(),
-                                singleLine = true,
-                                shape = RoundedCornerShape(16.dp),
-                            )
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            ) {
+                                OutlinedTextField(
+                                    value = joinCodeInput,
+                                    onValueChange = { joinCodeInput = it },
+                                    label = { Text("Código de la Juntada") },
+                                    placeholder = { Text("Ej: 492041") },
+                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                    modifier = Modifier.weight(1f),
+                                    singleLine = true,
+                                    shape = RoundedCornerShape(16.dp),
+                                )
+
+                                ClayButton(
+                                    onClick = {
+                                        qrScanner()
+                                    },
+                                    modifier = Modifier.height(56.dp),
+                                    cornerRadius = 16.dp,
+                                    backgroundColor = MaterialTheme.colorScheme.secondary,
+                                    contentColor = Color.Black,
+                                ) {
+                                    Icon(
+                                        imageVector = CameraIcon,
+                                        contentDescription = "Escanear código QR",
+                                        tint = Color.Black,
+                                    )
+                                }
+                            }
 
                             OutlinedTextField(
                                 value = joinNicknameInput,

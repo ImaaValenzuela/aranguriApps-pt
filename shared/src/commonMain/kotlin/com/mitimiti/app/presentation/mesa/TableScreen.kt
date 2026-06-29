@@ -47,6 +47,7 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.mitimiti.app.domain.model.TableType
+import com.mitimiti.app.presentation.components.QRCodeView
 import com.mitimiti.app.presentation.theme.ClayButton
 import com.mitimiti.app.presentation.theme.claymorphic
 
@@ -197,6 +198,32 @@ fun TableScreen(
                         }
                     }
                 }
+                Spacer(modifier = Modifier.height(12.dp))
+                Box(
+                    modifier =
+                        Modifier
+                            .size(160.dp)
+                            .claymorphic(
+                                backgroundColor = Color.White,
+                                cornerRadius = 16.dp,
+                                elevation = 2.dp,
+                                isDark = false,
+                            )
+                            .padding(12.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    QRCodeView(
+                        text = state.tableId,
+                        modifier = Modifier.fillMaxSize(),
+                    )
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Escaneá para unirte al instante",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                    fontWeight = FontWeight.Medium,
+                )
             }
         }
 
