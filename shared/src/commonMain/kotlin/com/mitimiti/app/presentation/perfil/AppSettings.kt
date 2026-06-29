@@ -10,9 +10,10 @@ object AppSettings {
     private val _cbu = MutableStateFlow("0000003100012345678901")
     val cbu: StateFlow<String> = _cbu
 
-    private val _frequentFriends = MutableStateFlow(
-        listOf("Juan", "Maria", "Carlos", "Flor", "Santi")
-    )
+    private val _frequentFriends =
+        MutableStateFlow(
+            listOf("Juan", "Maria", "Carlos", "Flor", "Santi"),
+        )
     val frequentFriends: StateFlow<List<String>> = _frequentFriends
 
     fun updateAlias(value: String) {

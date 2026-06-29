@@ -82,7 +82,10 @@ class TableViewModel(
             }
     }
 
-    fun saveUserProfile(alias: String, cbu: String) {
+    fun saveUserProfile(
+        alias: String,
+        cbu: String,
+    ) {
         val userId = authRepository.currentUser?.uid ?: return
         AppSettings.updateAlias(alias)
         AppSettings.updateCbu(cbu)

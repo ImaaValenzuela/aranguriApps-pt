@@ -97,24 +97,28 @@ fun MainHubScreen(
             modifier =
                 Modifier
                     .fillMaxSize()
-                    .padding(bottom = 80.dp), // Space for bottom navigation bar
+                    // Space for bottom navigation bar
+                    .padding(bottom = 80.dp),
         ) {
             when (selectedTab) {
-                0 -> TableListScreen(
-                    viewModel = viewModel,
-                    onNavigateToLobby = onNavigateToLobby,
-                    onSignOut = onSignOut,
-                )
-                1 -> FriendsScreen(
-                    onAddFriend = { name -> viewModel.addFrequentFriend(name) },
-                    onRemoveFriend = { name -> viewModel.removeFrequentFriend(name) },
-                )
+                0 ->
+                    TableListScreen(
+                        viewModel = viewModel,
+                        onNavigateToLobby = onNavigateToLobby,
+                        onSignOut = onSignOut,
+                    )
+                1 ->
+                    FriendsScreen(
+                        onAddFriend = { name -> viewModel.addFrequentFriend(name) },
+                        onRemoveFriend = { name -> viewModel.removeFrequentFriend(name) },
+                    )
                 3 -> StatsScreen(tables = tables)
-                4 -> ProfileScreen(
-                    userEmail = userEmail,
-                    onSaveProfile = { alias, cbu -> viewModel.saveUserProfile(alias, cbu) },
-                    onSignOut = onSignOut,
-                )
+                4 ->
+                    ProfileScreen(
+                        userEmail = userEmail,
+                        onSaveProfile = { alias, cbu -> viewModel.saveUserProfile(alias, cbu) },
+                        onSignOut = onSignOut,
+                    )
             }
         }
 
@@ -191,7 +195,8 @@ fun MainHubScreen(
 
                 // Tab 3: Stats (Estadísticas)
                 BottomNavItem(
-                    icon = Icons.Default.Info, // we use info as stats icon since stats icon is in extended pack
+                    // we use info as stats icon since stats icon is in extended pack
+                    icon = Icons.Default.Info,
                     label = "Stats",
                     isSelected = selectedTab == 3,
                     onClick = { selectedTab = 3 },
@@ -201,7 +206,8 @@ fun MainHubScreen(
 
                 // Tab 4: Profile (Perfil)
                 BottomNavItem(
-                    icon = Icons.Default.Home, // Home represents configuration or account details
+                    // Home represents configuration or account details
+                    icon = Icons.Default.Home,
                     label = "Perfil",
                     isSelected = selectedTab == 4,
                     onClick = { selectedTab = 4 },
@@ -244,7 +250,8 @@ fun MainHubScreen(
                             elevation = 10.dp,
                             isDark = isDark,
                         )
-                        .clickable(enabled = false) {}, // Prevent closing sheet when clicking inside
+                        // Prevent closing sheet when clicking inside
+                        .clickable(enabled = false) {},
             ) {
                 Column(
                     modifier = Modifier.padding(20.dp),
@@ -608,7 +615,14 @@ private fun BottomNavItem(
     isDark: Boolean,
     modifier: Modifier = Modifier,
 ) {
-    val color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+    val color =
+        if (isSelected) {
+            MaterialTheme.colorScheme.primary
+        } else {
+            MaterialTheme.colorScheme.onSurface.copy(
+                alpha = 0.5f,
+            )
+        }
     Column(
         modifier =
             modifier

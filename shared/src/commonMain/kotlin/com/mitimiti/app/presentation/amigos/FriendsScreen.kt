@@ -17,7 +17,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Icon
@@ -116,7 +115,7 @@ fun FriendsScreen(
                         Text(
                             text = "Guardar",
                             fontWeight = FontWeight.Bold,
-                            modifier = Modifier.padding(horizontal = 8.dp)
+                            modifier = Modifier.padding(horizontal = 8.dp),
                         )
                     }
                 }
@@ -186,13 +185,13 @@ fun FriendsScreen(
                                 fontWeight = FontWeight.SemiBold,
                                 modifier = Modifier.weight(1f),
                             )
-                             IconButton(onClick = { onRemoveFriend(name) }) {
+                            IconButton(onClick = { onRemoveFriend(name) }) {
                                 Icon(
                                     imageVector = Icons.Default.Delete,
                                     contentDescription = "Eliminar amigo",
                                     tint = MaterialTheme.colorScheme.error,
                                 )
-                             }
+                            }
                         }
                     }
                 }

@@ -47,7 +47,10 @@ class FirebaseTableRepository(
         dataSource.saveUserTableRelation(userId, tableId)
     }
 
-    override suspend fun saveUserProfile(userId: String, profile: com.mitimiti.app.domain.model.UserProfile) {
+    override suspend fun saveUserProfile(
+        userId: String,
+        profile: com.mitimiti.app.domain.model.UserProfile,
+    ) {
         val dto = com.mitimiti.app.data.model.UserProfileDto(alias = profile.alias, cbu = profile.cbu)
         dataSource.saveUserProfile(userId, dto)
     }
@@ -62,7 +65,10 @@ class FirebaseTableRepository(
         }
     }
 
-    override suspend fun saveFrequentFriends(userId: String, friends: List<String>) {
+    override suspend fun saveFrequentFriends(
+        userId: String,
+        friends: List<String>,
+    ) {
         dataSource.saveFrequentFriends(userId, friends)
     }
 

@@ -17,11 +17,17 @@ interface TableRepository {
         tableId: String,
     )
 
-    suspend fun saveUserProfile(userId: String, profile: com.mitimiti.app.domain.model.UserProfile)
+    suspend fun saveUserProfile(
+        userId: String,
+        profile: com.mitimiti.app.domain.model.UserProfile,
+    )
 
     fun observeUserProfile(userId: String): Flow<com.mitimiti.app.domain.model.UserProfile?>
 
-    suspend fun saveFrequentFriends(userId: String, friends: List<String>)
+    suspend fun saveFrequentFriends(
+        userId: String,
+        friends: List<String>,
+    )
 
     fun observeFrequentFriends(userId: String): Flow<List<String>>
 }

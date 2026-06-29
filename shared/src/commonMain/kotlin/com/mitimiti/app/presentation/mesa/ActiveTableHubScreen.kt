@@ -95,31 +95,34 @@ fun ActiveTableHubScreen(
         // Tab Content
         Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
             when (selectedStep) {
-                0 -> TableScreen(
-                    tableId = tableId,
-                    viewModel = tableViewModel,
-                    onNavigateToExpenses = { selectedStep = 1 },
-                    onNavigateToSummary = { selectedStep = 2 },
-                    onBack = onBack,
-                    modifier = Modifier.fillMaxSize(),
-                )
-                1 -> ExpenseScreen(
-                    tableId = tableId,
-                    viewModel = expenseViewModel,
-                    onNavigateToLobby = { selectedStep = 0 },
-                    onNavigateToSummary = { selectedStep = 2 },
-                    onBack = onBack,
-                    modifier = Modifier.fillMaxSize(),
-                )
-                2 -> SummaryScreen(
-                    tableId = tableId,
-                    viewModel = summaryViewModel,
-                    onNavigateToLobby = { selectedStep = 0 },
-                    onNavigateToExpenses = { selectedStep = 1 },
-                    onRestart = onBack,
-                    onBack = onBack,
-                    modifier = Modifier.fillMaxSize(),
-                )
+                0 ->
+                    TableScreen(
+                        tableId = tableId,
+                        viewModel = tableViewModel,
+                        onNavigateToExpenses = { selectedStep = 1 },
+                        onNavigateToSummary = { selectedStep = 2 },
+                        onBack = onBack,
+                        modifier = Modifier.fillMaxSize(),
+                    )
+                1 ->
+                    ExpenseScreen(
+                        tableId = tableId,
+                        viewModel = expenseViewModel,
+                        onNavigateToLobby = { selectedStep = 0 },
+                        onNavigateToSummary = { selectedStep = 2 },
+                        onBack = onBack,
+                        modifier = Modifier.fillMaxSize(),
+                    )
+                2 ->
+                    SummaryScreen(
+                        tableId = tableId,
+                        viewModel = summaryViewModel,
+                        onNavigateToLobby = { selectedStep = 0 },
+                        onNavigateToExpenses = { selectedStep = 1 },
+                        onRestart = onBack,
+                        onBack = onBack,
+                        modifier = Modifier.fillMaxSize(),
+                    )
             }
         }
     }

@@ -70,7 +70,10 @@ class FirebaseRemoteDataSource {
         }
     }
 
-    suspend fun saveUserProfile(userId: String, profile: UserProfileDto) {
+    suspend fun saveUserProfile(
+        userId: String,
+        profile: UserProfileDto,
+    ) {
         try {
             database.reference("users").child(userId).child("profile").setValue(profile)
         } catch (e: Exception) {
@@ -92,7 +95,10 @@ class FirebaseRemoteDataSource {
         }
     }
 
-    suspend fun saveFrequentFriends(userId: String, friends: List<String>) {
+    suspend fun saveFrequentFriends(
+        userId: String,
+        friends: List<String>,
+    ) {
         try {
             database.reference("users").child(userId).child("frequent_friends").setValue(friends)
         } catch (e: Exception) {

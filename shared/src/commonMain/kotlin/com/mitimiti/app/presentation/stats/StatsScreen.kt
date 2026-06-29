@@ -32,7 +32,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.mitimiti.app.domain.model.Table
 import com.mitimiti.app.domain.model.TableType
 import com.mitimiti.app.presentation.theme.claymorphic
@@ -56,11 +55,12 @@ fun StatsScreen(
 
     // Calculate a simulated average spend or total amount
     val totalFriendsInvolved = tables.sumOf { it.friends.size }
-    val averageFriendsPerTable = if (totalVaquitas > 0) {
-        totalFriendsInvolved.toDouble() / totalVaquitas
-    } else {
-        0.0
-    }
+    val averageFriendsPerTable =
+        if (totalVaquitas > 0) {
+            totalFriendsInvolved.toDouble() / totalVaquitas
+        } else {
+            0.0
+        }
 
     Column(
         modifier =
@@ -273,7 +273,7 @@ fun StatsScreen(
                                             MaterialTheme.colorScheme.surfaceVariant
                                         } else {
                                             Color(0xFFE0E0E0)
-                                        }
+                                        },
                                     ),
                         ) {
                             val fraction = if (totalVaquitas > 0) restaurantCount.toFloat() / totalVaquitas else 0f
@@ -324,7 +324,7 @@ fun StatsScreen(
                                             MaterialTheme.colorScheme.surfaceVariant
                                         } else {
                                             Color(0xFFE0E0E0)
-                                        }
+                                        },
                                     ),
                         ) {
                             val fraction = if (totalVaquitas > 0) homemadeCount.toFloat() / totalVaquitas else 0f
@@ -343,7 +343,10 @@ fun StatsScreen(
     }
 }
 
-private fun calculatePercentage(count: Int, total: Int): Int {
+private fun calculatePercentage(
+    count: Int,
+    total: Int,
+): Int {
     if (total == 0) return 0
     return ((count.toDouble() / total) * 100).toInt()
 }
