@@ -58,9 +58,8 @@ fun OnboardingScreen(
     var localError by remember { mutableStateOf<String?>(null) }
 
     val isUsernameValid = username.trim().length >= 3 && !username.contains(" ")
-    val isAliasValid = alias.trim().isNotEmpty()
-    val isCbuValid = cbu.trim().length == 22 && cbu.trim().all { it.isDigit() }
-    val isFormValid = isUsernameValid && isAliasValid && isCbuValid
+    val isCbuValid = cbu.trim().isEmpty() || (cbu.trim().length == 22 && cbu.trim().all { it.isDigit() })
+    val isFormValid = isUsernameValid && isCbuValid
 
     Column(
         modifier =
@@ -155,7 +154,7 @@ fun OnboardingScreen(
                         alias = it
                         localError = null
                     },
-                    label = { Text("Alias de MercadoPago / Banco") },
+                    label = { Text("Alias de MercadoPago / Banco (Opcional)") },
                     placeholder = { Text("Ej: mate.mitimiti.app") },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
@@ -177,7 +176,7 @@ fun OnboardingScreen(
                                 localError = null
                             }
                         },
-                        label = { Text("CBU / CVU (22 dígitos)") },
+                        label = { Text("CBU / CVU (22 dígitos) (Opcional)") },
                         placeholder = { Text("00000031000123...") },
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true,
@@ -189,7 +188,12 @@ fun OnboardingScreen(
                             ),
                     )
                     Text(
-                        text = "Debe tener exactamente 22 números.",
+                        text =
+                            if (cbu.isEmpty()) {
+                                "Opcional. Completalo para recibir transferencias."
+                            } else {
+                                "Debe tener exactamente 22 números."
+                            },
                         style = MaterialTheme.typography.labelSmall,
                         color =
                             if (cbu.isNotEmpty() && cbu.length != 22) {

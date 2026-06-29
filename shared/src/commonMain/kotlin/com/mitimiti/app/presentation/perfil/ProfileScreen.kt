@@ -16,12 +16,12 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -61,6 +61,16 @@ fun ProfileScreen(
     var aliasInput by remember(alias) { mutableStateOf(alias) }
     var cbuInput by remember(cbu) { mutableStateOf(cbu) }
     var showSavedMessage by remember { mutableStateOf(false) }
+
+    val isCbuValid =
+        cbuInput.trim().isEmpty() ||
+            (cbuInput.trim().length == 22 && cbuInput.trim().all { it.isDigit() })
+    val cbuError =
+        if (cbuInput.isNotEmpty() && cbuInput.length != 22) {
+            "El CBU debe tener exactamente 22 números"
+        } else {
+            null
+        }
 
     val imagePicker =
         rememberImagePicker { bytes ->
@@ -195,6 +205,30 @@ fun ProfileScreen(
 
         Spacer(modifier = Modifier.height(20.dp))
 
+        val showCbuBanner = cbu.isEmpty()
+        if (showCbuBanner) {
+            Box(
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 16.dp)
+                        .claymorphic(
+                            backgroundColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.9f),
+                            cornerRadius = 16.dp,
+                            elevation = 2.dp,
+                            isDark = isDark,
+                        )
+                        .padding(16.dp),
+            ) {
+                Text(
+                    text = "💡 ¡Completá tu CBU/CVU para recibir transferencias de tus amigos más fácilmente!",
+                    style = MaterialTheme.typography.bodySmall,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                )
+            }
+        }
+
         // Payment Info Card
         Box(
             modifier =
@@ -232,7 +266,7 @@ fun ProfileScreen(
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
                 )
 
-                Divider()
+                HorizontalDivider()
 
                 val username by AppSettings.username.collectAsState()
                 OutlinedTextField(
@@ -260,13 +294,17 @@ fun ProfileScreen(
 
                 OutlinedTextField(
                     value = cbuInput,
-                    onValueChange = {
-                        cbuInput = it
-                        showSavedMessage = false
+                    onValueChange = { input ->
+                        if (input.length <= 22 && input.all { it.isDigit() }) {
+                            cbuInput = input
+                            showSavedMessage = false
+                        }
                     },
-                    label = { Text("CBU / CVU") },
+                    label = { Text("CBU / CVU (22 dígitos)") },
                     placeholder = { Text("22 dígitos de tu cuenta") },
                     modifier = Modifier.fillMaxWidth(),
+                    isError = cbuError != null,
+                    supportingText = cbuError?.let { { Text(it) } },
                     singleLine = true,
                     shape = RoundedCornerShape(16.dp),
                 )
@@ -299,7 +337,7 @@ fun ProfileScreen(
                         showSavedMessage = true
                     },
                     modifier = Modifier.fillMaxWidth(),
-                    enabled = aliasInput.isNotBlank() || cbuInput.isNotBlank(),
+                    enabled = (aliasInput != alias || cbuInput != cbu) && isCbuValid,
                 ) {
                     Text("Guardar Datos", fontWeight = FontWeight.Bold)
                 }
@@ -320,7 +358,7 @@ fun ProfileScreen(
                 horizontalArrangement = Arrangement.Center,
             ) {
                 Icon(
-                    imageVector = Icons.Default.ExitToApp,
+                    imageVector = Icons.AutoMirrored.Filled.ExitToApp,
                     contentDescription = null,
                     modifier = Modifier.size(18.dp),
                 )

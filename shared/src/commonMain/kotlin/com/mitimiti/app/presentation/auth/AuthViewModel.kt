@@ -51,9 +51,7 @@ class AuthViewModel(
                             tableRepository.observeUserProfile(user.uid).collect { profile ->
                                 val onboarded =
                                     profile != null &&
-                                        profile.username.isNotBlank() &&
-                                        profile.alias.isNotBlank() &&
-                                        profile.cbu.isNotBlank()
+                                        profile.username.isNotBlank()
                                 if (onboarded && profile != null) {
                                     com.mitimiti.app.presentation.perfil.AppSettings.updateUsername(profile.username)
                                     com.mitimiti.app.presentation.perfil.AppSettings.updateAlias(profile.alias)
