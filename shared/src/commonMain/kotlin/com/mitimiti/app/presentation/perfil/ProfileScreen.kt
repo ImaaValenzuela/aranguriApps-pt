@@ -155,8 +155,9 @@ fun ProfileScreen(
                 }
 
                 Text(
-                    text = "Configurá tus datos predeterminados. Al cerrar una vaquita, " +
-                        "se incluirán automáticamente en el resumen copiado.",
+                    text =
+                        "Configurá tus datos predeterminados. Al cerrar una vaquita, " +
+                            "se incluirán automáticamente en el resumen copiado.",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
                 )
