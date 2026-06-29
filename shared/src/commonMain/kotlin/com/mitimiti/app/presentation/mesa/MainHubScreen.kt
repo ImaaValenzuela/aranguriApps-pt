@@ -105,7 +105,7 @@ fun MainHubScreen(
     onSignOut: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-        val state by viewModel.uiState.collectAsState()
+    val state by viewModel.uiState.collectAsState()
     val tables by viewModel.tables.collectAsState()
     val avatarBytes by viewModel.avatarBytes.collectAsState()
     val isDark = isSystemInDarkTheme()

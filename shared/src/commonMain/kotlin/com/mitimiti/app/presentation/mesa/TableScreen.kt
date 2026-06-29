@@ -81,9 +81,10 @@ fun TableScreen(
         modifier = modifier.fillMaxSize().padding(16.dp),
     ) {
         LazyColumn(
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxWidth(),
+            modifier =
+                Modifier
+                    .weight(1f)
+                    .fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             item {
@@ -200,7 +201,12 @@ fun TableScreen(
                             ) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Icon(
-                                        imageVector = if (copyMessageSuccess) Icons.Default.Check else Icons.Default.Share,
+                                        imageVector =
+                                            if (copyMessageSuccess) {
+                                                Icons.Default.Check
+                                            } else {
+                                                Icons.Default.Share
+                                            },
                                         contentDescription = null,
                                         modifier = Modifier.size(16.dp),
                                     )
@@ -381,10 +387,9 @@ fun TableScreen(
                                         text = "Agregar",
                                         fontWeight = FontWeight.Bold,
                                         maxLines = 1,
-                                        style = MaterialTheme.typography.bodyMedium
+                                        style = MaterialTheme.typography.bodyMedium,
                                     )
                                 }
-
                             }
 
                             errorMessage?.let { error ->
@@ -477,13 +482,13 @@ fun TableScreen(
                 item {
                     Box(
                         modifier = Modifier.fillMaxWidth().padding(16.dp),
-                        contentAlignment = Alignment.Center
+                        contentAlignment = Alignment.Center,
                     ) {
                         CircularProgressIndicator()
                     }
                 }
             }
-            
+
             // Add a spacer at the end for comfortable scrolling above the fixed bottom button
             item {
                 Spacer(modifier = Modifier.height(16.dp))

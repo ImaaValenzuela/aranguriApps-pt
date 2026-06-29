@@ -2,6 +2,7 @@ package com.mitimiti.app.presentation.mesa
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.mitimiti.app.compressImage
 import com.mitimiti.app.domain.model.Friend
 import com.mitimiti.app.domain.model.SplitType
 import com.mitimiti.app.domain.model.Table
@@ -10,11 +11,9 @@ import com.mitimiti.app.domain.model.UserProfile
 import com.mitimiti.app.domain.repository.AuthRepository
 import com.mitimiti.app.domain.repository.RealtimeSyncRepository
 import com.mitimiti.app.domain.repository.TableRepository
+import com.mitimiti.app.downloadBytes
 import com.mitimiti.app.presentation.perfil.AppSettings
 import com.mitimiti.app.toFirebaseData
-import com.mitimiti.app.toByteArray
-import com.mitimiti.app.downloadBytes
-import com.mitimiti.app.compressImage
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.storage.storage
 import kotlinx.coroutines.Job

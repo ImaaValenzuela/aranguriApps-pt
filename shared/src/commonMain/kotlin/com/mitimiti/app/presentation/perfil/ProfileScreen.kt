@@ -17,10 +17,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -41,9 +41,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.mitimiti.app.presentation.theme.ClayButton
 import com.mitimiti.app.presentation.theme.claymorphic
-import com.mitimiti.app.toImageBitmap
 import com.mitimiti.app.rememberImagePicker
-
+import com.mitimiti.app.toImageBitmap
 
 @Composable
 @Suppress("FunctionNaming", "LongMethod")
@@ -63,20 +62,22 @@ fun ProfileScreen(
     var cbuInput by remember(cbu) { mutableStateOf(cbu) }
     var showSavedMessage by remember { mutableStateOf(false) }
 
-    val imagePicker = rememberImagePicker { bytes ->
-        onUploadAvatar(bytes)
-    }
+    val imagePicker =
+        rememberImagePicker { bytes ->
+            onUploadAvatar(bytes)
+        }
 
-    val avatarBitmap = remember(avatarBytes) {
-        avatarBytes?.let {
-            try {
-                it.toImageBitmap()
-            } catch (e: Exception) {
-                e.printStackTrace()
-                null
+    val avatarBitmap =
+        remember(avatarBytes) {
+            avatarBytes?.let {
+                try {
+                    it.toImageBitmap()
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    null
+                }
             }
         }
-    }
 
     Column(
         modifier =
@@ -112,7 +113,7 @@ fun ProfileScreen(
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 Box(
-                    modifier = Modifier.size(72.dp)
+                    modifier = Modifier.size(72.dp),
                 ) {
                     Box(
                         modifier =

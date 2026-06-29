@@ -15,4 +15,3 @@ expect fun ByteArray.toFirebaseData(): dev.gitlive.firebase.storage.Data
 expect fun dev.gitlive.firebase.storage.Data.toByteArray(): ByteArray
 
 expect suspend fun dev.gitlive.firebase.storage.StorageReference.downloadBytes(maxSize: Long): ByteArray
-

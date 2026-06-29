@@ -10,4 +10,3 @@ expect fun rememberQRScanner(onScanResult: (String) -> Unit): () -> Unit
 
 @Composable
 expect fun rememberImagePicker(onImagePicked: (ByteArray) -> Unit): () -> Unit
-

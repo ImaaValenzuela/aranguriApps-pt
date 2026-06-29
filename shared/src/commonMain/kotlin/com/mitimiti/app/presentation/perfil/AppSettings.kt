@@ -35,7 +35,6 @@ object AppSettings {
         _avatarUrl.value = value
     }
 
-
     fun addFriend(friend: com.mitimiti.app.domain.model.UserProfile) {
         if (!_frequentFriends.value.any { it.username.equals(friend.username, ignoreCase = true) }) {
             _frequentFriends.value = _frequentFriends.value + friend
