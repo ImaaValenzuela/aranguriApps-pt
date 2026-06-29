@@ -12,7 +12,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavType
@@ -33,6 +35,7 @@ import com.mitimiti.app.presentation.consumo.ExpenseViewModel
 import com.mitimiti.app.presentation.mesa.ActiveTableHubScreen
 import com.mitimiti.app.presentation.mesa.MainHubScreen
 import com.mitimiti.app.presentation.mesa.TableViewModel
+import com.mitimiti.app.presentation.splash.SplashScreen
 
 @Composable
 @Suppress("FunctionNaming")
@@ -64,6 +67,8 @@ fun AppNavigation(
     val expenseViewModel = remember { ExpenseViewModel(tableRepository) }
     val summaryViewModel = remember { SummaryViewModel(tableRepository, calculateSplitExpensesUseCase) }
 
+    var isSplashFinished by remember { mutableStateOf(false) }
+
     LaunchedEffect(googleIdToken) {
         if (googleIdToken != null) {
             authViewModel.signInWithGoogle(googleIdToken)
@@ -72,25 +77,30 @@ fun AppNavigation(
     }
 
     // Monitor authentication state and adjust navigation
-    LaunchedEffect(authState.isAuthenticated, authState.isOnboarded) {
+    LaunchedEffect(authState.isAuthenticated, authState.isOnboarded, isSplashFinished) {
+        if (!isSplashFinished) return@LaunchedEffect
+
+        // Wait if auth status is loading
+        if (authState.isAuthenticated && authState.isOnboarded == null) return@LaunchedEffect
+
         if (authState.isAuthenticated) {
             if (authState.isOnboarded == true) {
                 navController.navigate("main_hub") {
-                    popUpTo(0) { inclusive = true }
+                    popUpTo("splash") { inclusive = true }
                 }
             } else if (authState.isOnboarded == false) {
                 navController.navigate("onboarding") {
-                    popUpTo(0) { inclusive = true }
+                    popUpTo("splash") { inclusive = true }
                 }
             }
         } else {
             navController.navigate("login") {
-                popUpTo(0) { inclusive = true }
+                popUpTo("splash") { inclusive = true }
             }
         }
     }
 
-    if (authState.isAuthenticated && authState.isOnboarded == null) {
+    if (isSplashFinished && authState.isAuthenticated && authState.isOnboarded == null) {
         Box(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center,
@@ -102,14 +112,7 @@ fun AppNavigation(
         return
     }
 
-    val startDestination =
-        remember(authState.isAuthenticated, authState.isOnboarded) {
-            if (authState.isAuthenticated) {
-                if (authState.isOnboarded == false) "onboarding" else "main_hub"
-            } else {
-                "login"
-            }
-        }
+    val startDestination = "splash"
 
     NavHost(
         navController = navController,
@@ -120,6 +123,14 @@ fun AppNavigation(
         popEnterTransition = { slideInHorizontally { width -> -width } + fadeIn() },
         popExitTransition = { slideOutHorizontally { width -> width } + fadeOut() },
     ) {
+        composable("splash") {
+            SplashScreen(
+                onAnimationFinished = {
+                    isSplashFinished = true
+                },
+                modifier = Modifier.fillMaxSize(),
+            )
+        }
         composable("login") {
             LoginScreen(
                 viewModel = authViewModel,
