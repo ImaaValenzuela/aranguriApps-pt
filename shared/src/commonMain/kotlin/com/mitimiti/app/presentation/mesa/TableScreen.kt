@@ -371,14 +371,24 @@ fun TableScreen(
                                             imageVector = Icons.Default.Person,
                                             contentDescription = null,
                                             modifier = Modifier.size(14.dp),
-                                            tint = if (alreadyInTable) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                                            tint =
+                                                if (alreadyInTable) {
+                                                    MaterialTheme.colorScheme.primary
+                                                } else {
+                                                    MaterialTheme.colorScheme.onSurfaceVariant
+                                                },
                                         )
                                         Spacer(modifier = Modifier.width(4.dp))
                                         Text(
                                             text = "@${friend.username}",
                                             style = MaterialTheme.typography.labelLarge,
                                             fontWeight = FontWeight.SemiBold,
-                                            color = if (alreadyInTable) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface,
+                                            color =
+                                                if (alreadyInTable) {
+                                                    MaterialTheme.colorScheme.onPrimaryContainer
+                                                } else {
+                                                    MaterialTheme.colorScheme.onSurface
+                                                },
                                         )
                                     }
                                 }
