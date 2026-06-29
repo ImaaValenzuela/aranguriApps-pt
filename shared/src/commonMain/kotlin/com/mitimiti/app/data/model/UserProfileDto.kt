@@ -7,4 +7,5 @@ data class UserProfileDto(
     val username: String = "",
     val alias: String = "",
     val cbu: String = "",
+    val avatarUrl: String? = null,
 )

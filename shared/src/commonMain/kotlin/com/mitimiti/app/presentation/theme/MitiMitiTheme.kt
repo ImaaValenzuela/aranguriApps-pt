@@ -149,6 +149,8 @@ fun ClayButton(
     backgroundColor: Color = MaterialTheme.colorScheme.primary,
     contentColor: Color = MaterialTheme.colorScheme.onPrimary,
     cornerRadius: Dp = 24.dp,
+    horizontalPadding: Dp = 24.dp,
+    verticalPadding: Dp = 12.dp,
     content: @Composable RowScope.() -> Unit,
 ) {
     val isDark = isSystemInDarkTheme()
@@ -174,7 +176,7 @@ fun ClayButton(
                     },
                 )
                 .clickable(enabled = enabled, onClick = onClick)
-                .padding(vertical = 12.dp, horizontal = 24.dp),
+                .padding(vertical = verticalPadding, horizontal = horizontalPadding),
         contentAlignment = Alignment.Center,
     ) {
         Row(

@@ -2,6 +2,7 @@ package com.mitimiti.app.presentation.mesa
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.mitimiti.app.compressImage
 import com.mitimiti.app.domain.model.Friend
 import com.mitimiti.app.domain.model.SplitType
 import com.mitimiti.app.domain.model.Table
@@ -10,7 +11,11 @@ import com.mitimiti.app.domain.model.UserProfile
 import com.mitimiti.app.domain.repository.AuthRepository
 import com.mitimiti.app.domain.repository.RealtimeSyncRepository
 import com.mitimiti.app.domain.repository.TableRepository
+import com.mitimiti.app.downloadBytes
 import com.mitimiti.app.presentation.perfil.AppSettings
+import com.mitimiti.app.toFirebaseData
+import dev.gitlive.firebase.Firebase
+import dev.gitlive.firebase.storage.storage
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -43,6 +48,9 @@ class TableViewModel(
     private val _tables = MutableStateFlow<List<Table>>(emptyList())
     val tables: StateFlow<List<Table>> = _tables.asStateFlow()
 
+    private val _avatarBytes = MutableStateFlow<ByteArray?>(null)
+    val avatarBytes: StateFlow<ByteArray?> = _avatarBytes.asStateFlow()
+
     private var observeJob: Job? = null
     private var userTablesJob: Job? = null
     private var settingsSyncJob: Job? = null
@@ -70,6 +78,19 @@ class TableViewModel(
                             AppSettings.updateUsername(profile.username)
                             AppSettings.updateAlias(profile.alias)
                             AppSettings.updateCbu(profile.cbu)
+                            AppSettings.updateAvatarUrl(profile.avatarUrl)
+                            if (profile.avatarUrl != null) {
+                                try {
+                                    val storageRef = Firebase.storage.reference.child("avatars/$userId.jpg")
+                                    val bytes = storageRef.downloadBytes(1024 * 1024 * 5)
+                                    _avatarBytes.value = bytes
+                                } catch (e: Exception) {
+                                    e.printStackTrace()
+                                    _avatarBytes.value = null
+                                }
+                            } else {
+                                _avatarBytes.value = null
+                            }
                         }
                     }
                 }
@@ -87,10 +108,34 @@ class TableViewModel(
     ) {
         val userId = authRepository.currentUser?.uid ?: return
         val currentUsername = AppSettings.username.value
+        val currentAvatarUrl = AppSettings.avatarUrl.value
         AppSettings.updateAlias(alias)
         AppSettings.updateCbu(cbu)
         viewModelScope.launch {
-            tableRepository.saveUserProfile(userId, UserProfile(currentUsername, alias, cbu))
+            tableRepository.saveUserProfile(userId, UserProfile(currentUsername, alias, cbu, currentAvatarUrl))
+        }
+    }
+
+    fun uploadAvatar(bytes: ByteArray) {
+        val userId = authRepository.currentUser?.uid ?: return
+        viewModelScope.launch {
+            try {
+                _uiState.update { it.copy(isLoading = true) }
+                val compressedBytes = bytes.compressImage()
+                val storageRef = Firebase.storage.reference.child("avatars/$userId.jpg")
+                val firebaseData = compressedBytes.toFirebaseData()
+                storageRef.putData(firebaseData)
+                val url = storageRef.getDownloadUrl()
+                val currentUsername = AppSettings.username.value
+                val currentAlias = AppSettings.alias.value
+                val currentCbu = AppSettings.cbu.value
+                AppSettings.updateAvatarUrl(url)
+                tableRepository.saveUserProfile(userId, UserProfile(currentUsername, currentAlias, currentCbu, url))
+                _uiState.update { it.copy(isLoading = false) }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                _uiState.update { it.copy(isLoading = false, error = e.message) }
+            }
         }
     }
 

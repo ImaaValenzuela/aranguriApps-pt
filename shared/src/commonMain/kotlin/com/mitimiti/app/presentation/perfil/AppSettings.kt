@@ -13,6 +13,9 @@ object AppSettings {
     private val _cbu = MutableStateFlow("0000003100012345678901")
     val cbu: StateFlow<String> = _cbu
 
+    private val _avatarUrl = MutableStateFlow<String?>(null)
+    val avatarUrl: StateFlow<String?> = _avatarUrl
+
     private val _frequentFriends = MutableStateFlow<List<com.mitimiti.app.domain.model.UserProfile>>(emptyList())
     val frequentFriends: StateFlow<List<com.mitimiti.app.domain.model.UserProfile>> = _frequentFriends
 
@@ -26,6 +29,10 @@ object AppSettings {
 
     fun updateCbu(value: String) {
         _cbu.value = value
+    }
+
+    fun updateAvatarUrl(value: String?) {
+        _avatarUrl.value = value
     }
 
     fun addFriend(friend: com.mitimiti.app.domain.model.UserProfile) {

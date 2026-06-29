@@ -53,6 +53,7 @@ kotlin {
             implementation(libs.androidx.lifecycle.runtimeCompose)
             implementation(libs.firebase.database)
             implementation(libs.firebase.auth)
+            implementation(libs.firebase.storage)
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.jetbrains.navigation.compose)
             implementation(libs.qrcode.kotlin)

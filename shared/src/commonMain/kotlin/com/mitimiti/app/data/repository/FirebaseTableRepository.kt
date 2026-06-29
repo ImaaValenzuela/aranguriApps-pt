@@ -56,6 +56,7 @@ class FirebaseTableRepository(
                 username = profile.username,
                 alias = profile.alias,
                 cbu = profile.cbu,
+                avatarUrl = profile.avatarUrl,
             )
         dataSource.saveUserProfile(userId, dto)
     }
@@ -67,6 +68,7 @@ class FirebaseTableRepository(
                     username = dto.username,
                     alias = dto.alias,
                     cbu = dto.cbu,
+                    avatarUrl = dto.avatarUrl,
                 )
             } else {
                 null
@@ -83,6 +85,7 @@ class FirebaseTableRepository(
                 username = profile.username,
                 alias = profile.alias,
                 cbu = profile.cbu,
+                avatarUrl = profile.avatarUrl,
             )
         return dataSource.claimUsernameAndSaveProfile(userId, dto)
     }
@@ -97,6 +100,7 @@ class FirebaseTableRepository(
                 username = dto.username,
                 alias = dto.alias,
                 cbu = dto.cbu,
+                avatarUrl = dto.avatarUrl,
             )
         }
     }
@@ -111,6 +115,7 @@ class FirebaseTableRepository(
                     username = it.username,
                     alias = it.alias,
                     cbu = it.cbu,
+                    avatarUrl = it.avatarUrl,
                 )
             }
         dataSource.saveFrequentFriends(userId, dtos)
@@ -123,6 +128,7 @@ class FirebaseTableRepository(
                     username = dto.username,
                     alias = dto.alias,
                     cbu = dto.cbu,
+                    avatarUrl = dto.avatarUrl,
                 )
             }
         }
