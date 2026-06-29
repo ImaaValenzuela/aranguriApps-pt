@@ -11,10 +11,13 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Button
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -31,7 +34,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import com.mitimiti.app.presentation.components.MitiLogo
+import com.mitimiti.app.presentation.theme.ClayButton
 
 @Composable
 fun LoginScreen(
@@ -44,6 +50,14 @@ fun LoginScreen(
 
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var isPasswordVisible by remember { mutableStateOf(false) }
+
+    val isEmailValid = email.contains("@") && email.contains(".")
+    val isPasswordValid = password.length >= 6
+    val isFormValid = isEmailValid && isPasswordValid
+
+    val emailError = if (email.isNotEmpty() && !isEmailValid) "Formato de email inválido" else null
+    val passwordError = if (password.isNotEmpty() && !isPasswordValid) "Mínimo 6 caracteres" else null
 
     LaunchedEffect(state.isAuthenticated) {
         if (state.isAuthenticated) {
@@ -61,6 +75,10 @@ fun LoginScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
+        MitiLogo(size = 90.dp)
+
+        Spacer(modifier = Modifier.height(16.dp))
+
         Text(
             text = "MitiMiti",
             style = MaterialTheme.typography.headlineLarge,
@@ -83,6 +101,8 @@ fun LoginScreen(
             onValueChange = { email = it },
             label = { Text("Correo electrónico") },
             modifier = Modifier.fillMaxWidth(),
+            isError = emailError != null,
+            supportingText = emailError?.let { { Text(it) } },
             keyboardOptions =
                 KeyboardOptions(
                     keyboardType = KeyboardType.Email,
@@ -98,7 +118,16 @@ fun LoginScreen(
             onValueChange = { password = it },
             label = { Text("Contraseña") },
             modifier = Modifier.fillMaxWidth(),
-            visualTransformation = PasswordVisualTransformation(),
+            isError = passwordError != null,
+            supportingText = passwordError?.let { { Text(it) } },
+            visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+            trailingIcon = {
+                val image = if (isPasswordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
+                val description = if (isPasswordVisible) "Ocultar contraseña" else "Mostrar contraseña"
+                IconButton(onClick = { isPasswordVisible = !isPasswordVisible }) {
+                    Icon(imageVector = image, contentDescription = description)
+                }
+            },
             keyboardOptions =
                 KeyboardOptions(
                     keyboardType = KeyboardType.Password,
@@ -107,7 +136,7 @@ fun LoginScreen(
             singleLine = true,
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
         state.error?.let { error ->
             Text(
@@ -115,13 +144,13 @@ fun LoginScreen(
                 color = MaterialTheme.colorScheme.error,
                 style = MaterialTheme.typography.bodySmall,
             )
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(12.dp))
         }
 
-        Button(
+        ClayButton(
             onClick = { viewModel.signInWithEmail(email, password) },
             modifier = Modifier.fillMaxWidth(),
-            enabled = email.isNotBlank() && password.isNotBlank() && !state.isLoading,
+            enabled = isFormValid && !state.isLoading,
         ) {
             if (state.isLoading) {
                 CircularProgressIndicator(
@@ -130,21 +159,29 @@ fun LoginScreen(
                     color = MaterialTheme.colorScheme.onPrimary,
                 )
             } else {
-                Text("Iniciar sesión")
+                Text(
+                    text = "Iniciar sesión",
+                    fontWeight = FontWeight.Bold,
+                )
             }
         }
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        OutlinedButton(
+        ClayButton(
             onClick = onGoogleSignInClick,
             modifier = Modifier.fillMaxWidth(),
             enabled = !state.isLoading,
+            backgroundColor = MaterialTheme.colorScheme.surfaceVariant,
+            contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
         ) {
-            Text("Continuar con Google")
+            Text(
+                text = "Continuar con Google 🚀",
+                fontWeight = FontWeight.Bold,
+            )
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(24.dp))
 
         TextButton(onClick = onNavigateToRegister) {
             Text("¿No tenés cuenta? Registrate")
