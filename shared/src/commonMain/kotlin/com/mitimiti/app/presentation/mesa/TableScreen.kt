@@ -18,7 +18,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
@@ -31,9 +31,12 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -47,6 +50,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.mitimiti.app.domain.model.TableType
 import com.mitimiti.app.presentation.components.QRCodeView
@@ -54,6 +58,7 @@ import com.mitimiti.app.presentation.perfil.AppSettings
 import com.mitimiti.app.presentation.theme.ClayButton
 import com.mitimiti.app.presentation.theme.claymorphic
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 @Suppress("LongMethod", "FunctionNaming")
 fun TableScreen(
@@ -72,6 +77,7 @@ fun TableScreen(
     var friendNameInput by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var copyMessageSuccess by remember { mutableStateOf(false) }
+    var showQrBottomSheet by remember { mutableStateOf(false) }
 
     LaunchedEffect(tableId) {
         viewModel.startObservingTable(tableId)
@@ -168,90 +174,119 @@ fun TableScreen(
 
                         Spacer(modifier = Modifier.height(12.dp))
 
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                imageVector = Icons.Default.Lock,
-                                contentDescription = null,
-                                modifier = Modifier.size(14.dp),
-                                tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text(
-                                text = "CÓDIGO DE ACCESO",
-                                style = MaterialTheme.typography.labelSmall,
-                                fontWeight = FontWeight.SemiBold,
-                            )
-                        }
+                        // Compact Access Code Row
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.Center,
+                            modifier = Modifier.fillMaxWidth(),
                         ) {
-                            Text(
-                                text = state.tableId,
-                                style = MaterialTheme.typography.displaySmall,
-                                fontWeight = FontWeight.Black,
-                                color = MaterialTheme.colorScheme.primary,
-                            )
-                            Spacer(modifier = Modifier.width(10.dp))
-                            TextButton(
+                            Column(
+                                horizontalAlignment = Alignment.Start,
+                                modifier = Modifier.weight(1f),
+                            ) {
+                                Text(
+                                    text = "CÓDIGO DE ACCESO",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
+                                )
+                                Text(
+                                    text = state.tableId,
+                                    style = MaterialTheme.typography.titleLarge,
+                                    fontWeight = FontWeight.Black,
+                                    color = MaterialTheme.colorScheme.primary,
+                                )
+                            }
+
+                            IconButton(
                                 onClick = {
                                     clipboardManager.setText(AnnotatedString(state.tableId))
                                     copyMessageSuccess = true
                                 },
                             ) {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Icon(
-                                        imageVector =
-                                            if (copyMessageSuccess) {
-                                                Icons.Default.Check
-                                            } else {
-                                                Icons.Default.Share
-                                            },
-                                        contentDescription = null,
-                                        modifier = Modifier.size(16.dp),
-                                    )
-                                    Spacer(modifier = Modifier.width(4.dp))
-                                    Text(if (copyMessageSuccess) "¡Copiado!" else "Copiar Código")
-                                }
+                                Icon(
+                                    imageVector = if (copyMessageSuccess) Icons.Default.Check else Icons.Default.Share,
+                                    contentDescription = "Copiar Código",
+                                    tint = MaterialTheme.colorScheme.primary,
+                                )
                             }
                         }
+
                         Spacer(modifier = Modifier.height(12.dp))
-                        Box(
-                            modifier =
-                                Modifier
-                                    .size(160.dp)
-                                    .claymorphic(
-                                        backgroundColor = Color.White,
-                                        cornerRadius = 16.dp,
-                                        elevation = 2.dp,
-                                        isDark = false,
-                                    )
-                                    .padding(12.dp),
-                            contentAlignment = Alignment.Center,
+
+                        // Invitation/QR trigger button
+                        ClayButton(
+                            onClick = { showQrBottomSheet = true },
+                            modifier = Modifier.fillMaxWidth(),
+                            cornerRadius = 16.dp,
+                            backgroundColor = MaterialTheme.colorScheme.secondaryContainer,
+                            contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
                         ) {
-                            QRCodeView(
-                                text = state.tableId,
-                                modifier = Modifier.fillMaxSize(),
-                            )
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center,
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Share,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(16.dp),
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = "Invitar amigos / Mostrar QR",
+                                    fontWeight = FontWeight.Bold,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                )
+                            }
                         }
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = "Escaneá para unirte al instante",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                            fontWeight = FontWeight.Medium,
-                        )
                     }
                 }
             }
 
             item {
-                Text(
-                    text = "Amigos en la juntada:",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(top = 8.dp),
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = "Amigos en la juntada:",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                    )
+
+                    if (state.friends.isNotEmpty()) {
+                        val isHighlighted = state.friends.size >= 2
+                        Box(
+                            modifier =
+                                Modifier
+                                    .claymorphic(
+                                        backgroundColor =
+                                            if (isHighlighted) {
+                                                MaterialTheme.colorScheme.primaryContainer
+                                            } else {
+                                                MaterialTheme.colorScheme.surfaceVariant
+                                            },
+                                        cornerRadius = 12.dp,
+                                        elevation = 1.dp,
+                                        isDark = isDark,
+                                    )
+                                    .padding(horizontal = 8.dp, vertical = 4.dp),
+                        ) {
+                            Text(
+                                text = "${state.friends.size} amigos",
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.Bold,
+                                color =
+                                    if (isHighlighted) {
+                                        MaterialTheme.colorScheme.onPrimaryContainer
+                                    } else {
+                                        MaterialTheme.colorScheme.onSurfaceVariant
+                                    },
+                            )
+                        }
+                    }
+                }
             }
 
             items(state.friends) { friend ->
@@ -512,10 +547,89 @@ fun TableScreen(
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Icon(
-                    imageVector = Icons.Default.ArrowForward,
+                    imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                     contentDescription = null,
                     modifier = Modifier.size(16.dp),
                 )
+            }
+        }
+    }
+
+    if (showQrBottomSheet) {
+        ModalBottomSheet(
+            onDismissRequest = { showQrBottomSheet = false },
+            sheetState = rememberModalBottomSheetState(),
+            containerColor = if (isDark) MaterialTheme.colorScheme.surface else Color.White,
+        ) {
+            Column(
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp, vertical = 16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Text(
+                    text = "Código de Acceso",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center,
+                ) {
+                    Text(
+                        text = state.tableId,
+                        style = MaterialTheme.typography.displaySmall,
+                        fontWeight = FontWeight.Black,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                    Spacer(modifier = Modifier.width(10.dp))
+                    TextButton(
+                        onClick = {
+                            clipboardManager.setText(AnnotatedString(state.tableId))
+                            copyMessageSuccess = true
+                        },
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = if (copyMessageSuccess) Icons.Default.Check else Icons.Default.Share,
+                                contentDescription = null,
+                                modifier = Modifier.size(16.dp),
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(if (copyMessageSuccess) "¡Copiado!" else "Copiar Código")
+                        }
+                    }
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+                Box(
+                    modifier =
+                        Modifier
+                            .size(200.dp)
+                            .claymorphic(
+                                backgroundColor = Color.White,
+                                cornerRadius = 20.dp,
+                                elevation = 2.dp,
+                                isDark = false,
+                            )
+                            .padding(16.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    QRCodeView(
+                        text = state.tableId,
+                        modifier = Modifier.fillMaxSize(),
+                    )
+                }
+                Spacer(modifier = Modifier.height(12.dp))
+                Text(
+                    text = "Pedile a tus amigos que escaneen el QR para unirse a la juntada.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                    textAlign = TextAlign.Center,
+                    fontWeight = FontWeight.Medium,
+                )
+                Spacer(modifier = Modifier.height(24.dp))
             }
         }
     }
