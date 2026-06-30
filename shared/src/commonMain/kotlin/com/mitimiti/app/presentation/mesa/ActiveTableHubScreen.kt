@@ -1,5 +1,11 @@
 package com.mitimiti.app.presentation.mesa
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,6 +25,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -44,6 +51,24 @@ fun ActiveTableHubScreen(
     modifier: Modifier = Modifier,
 ) {
     var selectedStep by remember { mutableStateOf(0) } // 0: Lobby, 1: Expenses, 2: Summary
+
+    // Observamos el estado de ambos ViewModels para saber cuánto se puede avanzar
+    val tableState by tableViewModel.uiState.collectAsState()
+    val expenseState by expenseViewModel.uiState.collectAsState()
+
+    // Reglas de validación:
+    //   Paso 0 (Lobby):    siempre accesible
+    //   Paso 1 (Gastos):   al menos 2 amigos en la juntada
+    //   Paso 2 (Cuenta):   al menos 1 gasto cargado
+    val hasFriends = tableState.friends.size >= 1
+    val hasExpenses = expenseState.expenses.isNotEmpty()
+
+    val maxAllowedStep =
+        when {
+            hasExpenses -> 2
+            hasFriends -> 1
+            else -> 0
+        }
 
     Column(
         modifier =
@@ -82,47 +107,72 @@ fun ActiveTableHubScreen(
             )
         }
 
-        // Wizard Progress Tracker (Clickable tabs)
+        // Wizard Progress Tracker con validación de pasos
         WizardProgressBar(
             currentStep = selectedStep,
+            maxAllowedStep = maxAllowedStep,
             onStepClick = { step ->
-                selectedStep = step
+                // Solo permite navegar si el paso es alcanzable
+                if (step <= maxAllowedStep) {
+                    selectedStep = step
+                }
             },
         )
 
         Spacer(modifier = Modifier.height(10.dp))
 
-        // Tab Content
+        // Tab Content con AnimatedContent para transición suave entre pasos
         Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
-            when (selectedStep) {
-                0 ->
-                    TableScreen(
-                        tableId = tableId,
-                        viewModel = tableViewModel,
-                        onNavigateToExpenses = { selectedStep = 1 },
-                        onNavigateToSummary = { selectedStep = 2 },
-                        onBack = onBack,
-                        modifier = Modifier.fillMaxSize(),
-                    )
-                1 ->
-                    ExpenseScreen(
-                        tableId = tableId,
-                        viewModel = expenseViewModel,
-                        onNavigateToLobby = { selectedStep = 0 },
-                        onNavigateToSummary = { selectedStep = 2 },
-                        onBack = onBack,
-                        modifier = Modifier.fillMaxSize(),
-                    )
-                2 ->
-                    SummaryScreen(
-                        tableId = tableId,
-                        viewModel = summaryViewModel,
-                        onNavigateToLobby = { selectedStep = 0 },
-                        onNavigateToExpenses = { selectedStep = 1 },
-                        onRestart = onBack,
-                        onBack = onBack,
-                        modifier = Modifier.fillMaxSize(),
-                    )
+            AnimatedContent(
+                targetState = selectedStep,
+                transitionSpec = {
+                    // Slide desde la derecha al avanzar, desde la izquierda al retroceder
+                    if (targetState > initialState) {
+                        (slideInHorizontally { it } + fadeIn()) togetherWith
+                            (slideOutHorizontally { -it } + fadeOut())
+                    } else {
+                        (slideInHorizontally { -it } + fadeIn()) togetherWith
+                            (slideOutHorizontally { it } + fadeOut())
+                    }
+                },
+                label = "WizardStepTransition",
+            ) { step ->
+                when (step) {
+                    0 ->
+                        TableScreen(
+                            tableId = tableId,
+                            viewModel = tableViewModel,
+                            onNavigateToExpenses = {
+                                if (maxAllowedStep >= 1) selectedStep = 1
+                            },
+                            onNavigateToSummary = {
+                                if (maxAllowedStep >= 2) selectedStep = 2
+                            },
+                            onBack = onBack,
+                            modifier = Modifier.fillMaxSize(),
+                        )
+                    1 ->
+                        ExpenseScreen(
+                            tableId = tableId,
+                            viewModel = expenseViewModel,
+                            onNavigateToLobby = { selectedStep = 0 },
+                            onNavigateToSummary = {
+                                if (maxAllowedStep >= 2) selectedStep = 2
+                            },
+                            onBack = onBack,
+                            modifier = Modifier.fillMaxSize(),
+                        )
+                    2 ->
+                        SummaryScreen(
+                            tableId = tableId,
+                            viewModel = summaryViewModel,
+                            onNavigateToLobby = { selectedStep = 0 },
+                            onNavigateToExpenses = { selectedStep = 1 },
+                            onRestart = onBack,
+                            onBack = onBack,
+                            modifier = Modifier.fillMaxSize(),
+                        )
+                }
             }
         }
     }

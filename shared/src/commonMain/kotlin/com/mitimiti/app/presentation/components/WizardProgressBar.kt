@@ -18,16 +18,21 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.mitimiti.app.presentation.theme.claymorphic
 
 @Composable
+@Suppress("FunctionNaming")
 fun WizardProgressBar(
     currentStep: Int,
     onStepClick: (Int) -> Unit,
     modifier: Modifier = Modifier,
+    // El paso máximo al que se puede navegar (inclusive).
+    // Por defecto = currentStep, lo que permite ir hacia atrás pero no adelante sin completar.
+    maxAllowedStep: Int = currentStep,
 ) {
     val isDark = isSystemInDarkTheme()
     val steps = listOf("Juntada", "Gastos", "Cuenta")
@@ -49,6 +54,7 @@ fun WizardProgressBar(
         steps.forEachIndexed { index, title ->
             val isActive = index == currentStep
             val isCompleted = index < currentStep
+            val isLocked = index > maxAllowedStep
 
             val bubbleBgColor =
                 when {
@@ -69,18 +75,25 @@ fun WizardProgressBar(
                     else -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                 }
 
+            // Pasos bloqueados se muestran al 40% de opacidad
+            val stepAlpha = if (isLocked) 0.4f else 1f
+
             Box(
                 modifier =
                     Modifier
                         .weight(1f)
                         .padding(horizontal = 4.dp)
+                        .alpha(stepAlpha)
                         .claymorphic(
                             backgroundColor = bubbleBgColor,
                             cornerRadius = 16.dp,
                             elevation = if (isActive) 6.dp else 2.dp,
                             isDark = isDark,
                         )
-                        .clickable { onStepClick(index) }
+                        .then(
+                            // Solo clickable si el paso no está bloqueado
+                            if (!isLocked) Modifier.clickable { onStepClick(index) } else Modifier,
+                        )
                         .padding(vertical = 8.dp),
                 contentAlignment = Alignment.Center,
             ) {
