@@ -1,5 +1,11 @@
 package com.mitimiti.app.presentation.mesa
 
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
@@ -28,6 +34,7 @@ import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -49,6 +56,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -245,6 +253,67 @@ fun TableScreen(
                                         text = "Invitar amigos / Mostrar QR",
                                         fontWeight = FontWeight.Bold,
                                         style = MaterialTheme.typography.bodyMedium,
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (!state.isClosed && state.friends.isEmpty()) {
+                    item {
+                        val infiniteTransition = rememberInfiniteTransition(label = "pulsing")
+                        val pulseScale by infiniteTransition.animateFloat(
+                            initialValue = 0.98f,
+                            targetValue = 1.02f,
+                            animationSpec =
+                                infiniteRepeatable(
+                                    animation = tween(durationMillis = 1000, easing = FastOutSlowInEasing),
+                                    repeatMode = RepeatMode.Reverse,
+                                ),
+                            label = "scale",
+                        )
+
+                        Box(
+                            modifier =
+                                Modifier
+                                    .fillMaxWidth()
+                                    .graphicsLayer(
+                                        scaleX = pulseScale,
+                                        scaleY = pulseScale,
+                                    )
+                                    .claymorphic(
+                                        backgroundColor = MaterialTheme.colorScheme.errorContainer,
+                                        cornerRadius = 16.dp,
+                                        elevation = 2.dp,
+                                        isDark = isDark,
+                                    )
+                                    .padding(16.dp),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Warning,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onErrorContainer,
+                                    modifier = Modifier.size(24.dp),
+                                )
+                                Column {
+                                    Text(
+                                        text = "¡Faltan integrantes!",
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onErrorContainer,
+                                        style = MaterialTheme.typography.titleSmall,
+                                    )
+                                    Text(
+                                        text =
+                                            "Agregá al menos 1 amigo para poder cargar " +
+                                                "gastos y dividir la cuenta.",
+                                        color = MaterialTheme.colorScheme.onErrorContainer.copy(alpha = 0.85f),
+                                        style = MaterialTheme.typography.bodySmall,
                                     )
                                 }
                             }
