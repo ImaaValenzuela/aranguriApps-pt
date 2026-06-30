@@ -16,6 +16,7 @@ import kotlinx.coroutines.launch
 
 data class SummaryUiState(
     val tableId: String = "",
+    val tableName: String = "",
     val splitType: SplitType = SplitType.BY_CONSUMPTION,
     val billSummary: TableBillSummary? = null,
     val formattedShareText: String = "",
@@ -56,6 +57,7 @@ class SummaryViewModel(
                         _uiState.update {
                             it.copy(
                                 tableId = tableId,
+                                tableName = table.name,
                                 splitType = table.splitType,
                                 billSummary = summary,
                                 formattedShareText = shareText,
