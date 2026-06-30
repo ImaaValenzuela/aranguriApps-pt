@@ -35,6 +35,7 @@ data class TableUiState(
     val isClosed: Boolean = false,
     val isLoading: Boolean = false,
     val error: String? = null,
+    val isRefreshing: Boolean = false,
 )
 
 class TableViewModel(
@@ -44,6 +45,21 @@ class TableViewModel(
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(TableUiState())
     val uiState: StateFlow<TableUiState> = _uiState.asStateFlow()
+
+    fun refreshTable(tableId: String) {
+        if (tableId.isEmpty()) return
+        viewModelScope.launch {
+            _uiState.update { it.copy(isRefreshing = true) }
+            try {
+                tableRepository.getTable(tableId)
+                startObservingTable(tableId)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            } finally {
+                _uiState.update { it.copy(isRefreshing = false) }
+            }
+        }
+    }
 
     private val _tables = MutableStateFlow<List<Table>>(emptyList())
     val tables: StateFlow<List<Table>> = _tables.asStateFlow()
