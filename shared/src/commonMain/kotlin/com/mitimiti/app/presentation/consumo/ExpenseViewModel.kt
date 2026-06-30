@@ -26,6 +26,7 @@ data class ExpenseUiState(
     val isClosed: Boolean = false,
     val isLoading: Boolean = false,
     val error: String? = null,
+    val isRefreshing: Boolean = false,
 )
 
 class ExpenseViewModel(
@@ -33,6 +34,21 @@ class ExpenseViewModel(
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(ExpenseUiState())
     val uiState: StateFlow<ExpenseUiState> = _uiState.asStateFlow()
+
+    fun refreshTable(tableId: String) {
+        if (tableId.isEmpty()) return
+        viewModelScope.launch {
+            _uiState.update { it.copy(isRefreshing = true) }
+            try {
+                tableRepository.getTable(tableId)
+                loadTable(tableId)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            } finally {
+                _uiState.update { it.copy(isRefreshing = false) }
+            }
+        }
+    }
 
     private var observeJob: Job? = null
 
