@@ -14,7 +14,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.Check
@@ -89,11 +91,14 @@ fun ProfileScreen(
             }
         }
 
+    val scrollState = rememberScrollState()
+
     Column(
         modifier =
             modifier
                 .fillMaxSize()
                 .safeDrawingPadding()
+                .verticalScroll(scrollState)
                 .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
@@ -344,7 +349,7 @@ fun ProfileScreen(
             }
         }
 
-        Spacer(modifier = Modifier.weight(1f))
+        Spacer(modifier = Modifier.height(24.dp))
 
         // Logout Button
         ClayButton(
