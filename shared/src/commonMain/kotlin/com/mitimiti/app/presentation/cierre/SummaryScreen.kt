@@ -24,6 +24,7 @@ import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -39,10 +40,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.mitimiti.app.domain.model.SplitType
 import com.mitimiti.app.domain.model.TableType
 import com.mitimiti.app.presentation.theme.ClayButton
@@ -61,7 +63,6 @@ fun SummaryScreen(
     modifier: Modifier = Modifier,
 ) {
     val state by viewModel.uiState.collectAsState()
-    val clipboardManager = LocalClipboardManager.current
     val isDark = isSystemInDarkTheme()
     val textSharer = rememberTextSharer()
 
@@ -75,7 +76,57 @@ fun SummaryScreen(
     Column(
         modifier = modifier.fillMaxSize(),
     ) {
-        // Split Strategy Toggle Selector
+        // ── HERO CARD ────────────────────────────────────────────────────────
+        Box(
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .claymorphic(
+                        backgroundColor = MaterialTheme.colorScheme.primary,
+                        cornerRadius = 20.dp,
+                        elevation = 6.dp,
+                        isDark = isDark,
+                    )
+                    .padding(horizontal = 20.dp, vertical = 16.dp),
+        ) {
+            Column {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.Star,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp),
+                        tint = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f),
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = state.tableName.ifBlank { "Resumen de la Juntada" },
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                val totalText = state.billSummary?.total?.let { "\$${it.format(2)}" } ?: "—"
+                Text(
+                    text = totalText,
+                    style = MaterialTheme.typography.displaySmall,
+                    fontWeight = FontWeight.Black,
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    fontSize = 36.sp,
+                )
+                Text(
+                    text = "Total de la vaquita",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f),
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        // ── ESTADO CERRADA / TOGGLE DE DIVISIÓN ──────────────────────────────
         if (state.isClosed) {
             val strategyText = if (state.splitType == SplitType.EQUAL) "Partes Iguales" else "Consumo"
             Box(
@@ -184,7 +235,7 @@ fun SummaryScreen(
 
         Spacer(modifier = Modifier.height(10.dp))
 
-        // Dynamic tip and extra input fields directly in final screen
+        // ── AJUSTAR VAQUITA (propina/extras) ─────────────────────────────────
         if (!state.isClosed) {
             var tipInput by remember(state.tipPercentage) { mutableStateOf(state.tipPercentage.toString()) }
             var extraInput by remember(state.fixedExtraCost) { mutableStateOf(state.fixedExtraCost.toString()) }
@@ -277,7 +328,7 @@ fun SummaryScreen(
             Spacer(modifier = Modifier.height(10.dp))
         }
 
-        // Balances and transactions card
+        // ── RESUMEN FINAL (saldos + transferencias) ───────────────────────────
         Box(
             modifier =
                 Modifier
@@ -291,6 +342,7 @@ fun SummaryScreen(
                     ),
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
+                // Título de sección renombrado
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
                         imageVector = Icons.Default.Person,
@@ -300,7 +352,7 @@ fun SummaryScreen(
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = "Quién pone y quién se lleva",
+                        text = "Resumen Final",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                     )
@@ -310,9 +362,10 @@ fun SummaryScreen(
 
                 state.billSummary?.let { summary ->
                     LazyColumn(modifier = Modifier.weight(1f)) {
+                        // ── Sección: Saldos ──────────────────────────────────
                         item {
                             Text(
-                                text = "Saldos Finales",
+                                text = "Saldos",
                                 style = MaterialTheme.typography.labelMedium,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.outline,
@@ -335,8 +388,8 @@ fun SummaryScreen(
                                     )
                                     Text(
                                         text =
-                                            "Garpó: $${bill.amountPaid.format(2)} | " +
-                                                "Consumió: $${bill.total.format(2)}",
+                                            "Garpó: \$${bill.amountPaid.format(2)} | " +
+                                                "Consumió: \$${bill.total.format(2)}",
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                                     )
@@ -353,11 +406,11 @@ fun SummaryScreen(
                                     }
                                 val balanceText =
                                     if (balance > 0.01) {
-                                        "+$${balance.format(2)}"
+                                        "+\$${balance.format(2)}"
                                     } else if (balance < -0.01) {
-                                        "-$${(-balance).format(2)}"
+                                        "-\$${(-balance).format(2)}"
                                     } else {
-                                        "$0.00"
+                                        "\$0.00"
                                     }
 
                                 Text(
@@ -370,9 +423,69 @@ fun SummaryScreen(
                             Divider()
                         }
 
+                        // ── Sección: Totales ─────────────────────────────────
+                        item {
+                            Spacer(modifier = Modifier.height(10.dp))
+                            Box(
+                                modifier =
+                                    Modifier
+                                        .fillMaxWidth()
+                                        .claymorphic(
+                                            backgroundColor =
+                                                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f),
+                                            cornerRadius = 14.dp,
+                                            elevation = 1.dp,
+                                            isDark = isDark,
+                                        )
+                                        .padding(horizontal = 12.dp, vertical = 8.dp),
+                            ) {
+                                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                    Row(modifier = Modifier.fillMaxWidth()) {
+                                        Text(
+                                            text = "Subtotal:",
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        )
+                                        Spacer(modifier = Modifier.weight(1f))
+                                        Text(
+                                            text = "\$${summary.subtotal.format(2)}",
+                                            style = MaterialTheme.typography.bodySmall,
+                                        )
+                                    }
+                                    Row(modifier = Modifier.fillMaxWidth()) {
+                                        Text(
+                                            text = "Propina para el Mozo:",
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        )
+                                        Spacer(modifier = Modifier.weight(1f))
+                                        Text(
+                                            text = "\$${summary.totalTip.format(2)}",
+                                            style = MaterialTheme.typography.bodySmall,
+                                        )
+                                    }
+                                    Row(modifier = Modifier.fillMaxWidth()) {
+                                        Text(
+                                            text = "Extras/Cubiertos:",
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        )
+                                        Spacer(modifier = Modifier.weight(1f))
+                                        Text(
+                                            text = "\$${summary.totalExtra.format(2)}",
+                                            style = MaterialTheme.typography.bodySmall,
+                                        )
+                                    }
+                                }
+                            }
+                        }
+
+                        // ── Sección: ¿Quién le transfiere a quién? ───────────
                         if (summary.transactions.isNotEmpty()) {
                             item {
-                                Spacer(modifier = Modifier.height(12.dp))
+                                Spacer(modifier = Modifier.height(14.dp))
+                                Divider()
+                                Spacer(modifier = Modifier.height(8.dp))
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Icon(
                                         imageVector = Icons.Default.ArrowForward,
@@ -382,7 +495,7 @@ fun SummaryScreen(
                                     )
                                     Spacer(modifier = Modifier.width(4.dp))
                                     Text(
-                                        text = "Transferencias para saldar deudas:",
+                                        text = "¿Quién le transfiere a quién?",
                                         style = MaterialTheme.typography.titleSmall,
                                         fontWeight = FontWeight.Bold,
                                     )
@@ -430,7 +543,7 @@ fun SummaryScreen(
                                         )
                                         Spacer(modifier = Modifier.weight(1f))
                                         Text(
-                                            text = "$${tx.amount.format(2)}",
+                                            text = "\$${tx.amount.format(2)}",
                                             fontWeight = FontWeight.Black,
                                             color = MaterialTheme.colorScheme.primary,
                                             style = MaterialTheme.typography.bodyLarge,
@@ -438,46 +551,16 @@ fun SummaryScreen(
                                     }
                                 }
                             }
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    Column(
-                        modifier =
-                            Modifier
-                                .fillMaxWidth()
-                                .padding(top = 4.dp),
-                    ) {
-                        Row(modifier = Modifier.fillMaxWidth()) {
-                            Text(text = "Subtotal: ", style = MaterialTheme.typography.bodyMedium)
-                            Spacer(modifier = Modifier.weight(1f))
-                            Text(text = "$${summary.subtotal.format(2)}", style = MaterialTheme.typography.bodyMedium)
-                        }
-                        Row(modifier = Modifier.fillMaxWidth()) {
-                            Text(text = "Propina para el Mozo: ", style = MaterialTheme.typography.bodyMedium)
-                            Spacer(modifier = Modifier.weight(1f))
-                            Text(text = "$${summary.totalTip.format(2)}", style = MaterialTheme.typography.bodyMedium)
-                        }
-                        Row(modifier = Modifier.fillMaxWidth()) {
-                            Text(text = "Extras/Cubiertos: ", style = MaterialTheme.typography.bodyMedium)
-                            Spacer(modifier = Modifier.weight(1f))
-                            Text(text = "$${summary.totalExtra.format(2)}", style = MaterialTheme.typography.bodyMedium)
-                        }
-                        Divider(modifier = Modifier.padding(vertical = 4.dp))
-                        Row(modifier = Modifier.fillMaxWidth()) {
-                            Text(
-                                text = "Total de la Vaquita: ",
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold,
-                            )
-                            Spacer(modifier = Modifier.weight(1f))
-                            Text(
-                                text = "$${summary.total.format(2)}",
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Black,
-                                color = MaterialTheme.colorScheme.primary,
-                            )
+                        } else {
+                            item {
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    text = "🎉 ¡Están a mano! No hay deudas.",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF2E7D32),
+                                )
+                            }
                         }
                     }
                 } ?: Text(text = "Cargando divisiones...", style = MaterialTheme.typography.bodyLarge)
@@ -486,6 +569,7 @@ fun SummaryScreen(
 
         Spacer(modifier = Modifier.height(12.dp))
 
+        // ── BOTONES DE ACCIÓN ─────────────────────────────────────────────────
         Row(modifier = Modifier.fillMaxWidth()) {
             ClayButton(
                 onClick = {
