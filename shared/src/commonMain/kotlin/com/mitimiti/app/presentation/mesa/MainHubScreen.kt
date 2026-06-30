@@ -7,6 +7,7 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -51,6 +52,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.path
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -63,6 +65,7 @@ import com.mitimiti.app.presentation.stats.StatsScreen
 import com.mitimiti.app.presentation.theme.ClayButton
 import com.mitimiti.app.presentation.theme.claymorphic
 import com.mitimiti.app.rememberQRScanner
+import kotlinx.coroutines.delay
 
 private val CameraIcon: ImageVector =
     ImageVector.Builder(
@@ -192,6 +195,7 @@ fun MainHubScreen(
 
     var selectedTab by remember { mutableStateOf(0) } // 0: Home, 1: Friends, 2: Plus (Overlay), 3: Stats, 4: Profile
     var showBottomSheet by remember { mutableStateOf(false) }
+    var showTooltip by remember { mutableStateOf(false) }
     var bottomSheetMode by remember { mutableStateOf(0) } // 0: Create, 1: Join
 
     val currentUsername by AppSettings.username.collectAsState()
@@ -214,6 +218,13 @@ fun MainHubScreen(
         }
         if (joinNicknameInput.isEmpty()) {
             joinNicknameInput = currentUsername
+        }
+    }
+
+    LaunchedEffect(showTooltip) {
+        if (showTooltip) {
+            delay(2000)
+            showTooltip = false
         }
     }
 
@@ -311,6 +322,32 @@ fun MainHubScreen(
                             .offset(y = (-18).dp),
                     contentAlignment = Alignment.Center,
                 ) {
+                    androidx.compose.animation.AnimatedVisibility(
+                        visible = showTooltip,
+                        enter = fadeIn() + slideInVertically { it / 2 },
+                        exit = fadeOut() + slideOutVertically { it / 2 },
+                        modifier = Modifier.offset(y = (-52).dp),
+                    ) {
+                        Box(
+                            modifier =
+                                Modifier
+                                    .claymorphic(
+                                        backgroundColor = MaterialTheme.colorScheme.primaryContainer,
+                                        cornerRadius = 10.dp,
+                                        elevation = 4.dp,
+                                        isDark = isDark,
+                                    )
+                                    .padding(horizontal = 10.dp, vertical = 6.dp),
+                        ) {
+                            Text(
+                                text = "Nueva Juntada",
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                            )
+                        }
+                    }
+
                     Box(
                         modifier =
                             Modifier
@@ -321,8 +358,11 @@ fun MainHubScreen(
                                     elevation = 6.dp,
                                     isDark = isDark,
                                 )
-                                .clickable {
-                                    showBottomSheet = true
+                                .pointerInput(Unit) {
+                                    detectTapGestures(
+                                        onLongPress = { showTooltip = true },
+                                        onTap = { showBottomSheet = true },
+                                    )
                                 },
                         contentAlignment = Alignment.Center,
                     ) {
