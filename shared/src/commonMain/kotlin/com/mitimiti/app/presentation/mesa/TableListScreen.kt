@@ -32,6 +32,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.text.font.FontWeight
@@ -39,73 +40,82 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.mitimiti.app.domain.model.Table
 import com.mitimiti.app.domain.model.TableType
+import com.mitimiti.app.presentation.theme.ClayButton
 import com.mitimiti.app.presentation.theme.claymorphic
 
-// Beautiful custom illustration representing a shared receipt/vaquita with friends
-private val EmptyStateIllustration: ImageVector =
+// Beautiful custom illustration representing a shared Mate cup (Argentine theme)
+private val MateIllustration: ImageVector =
     ImageVector.Builder(
-        name = "EmptyStateIllustration",
+        name = "MateIllustration",
         defaultWidth = 120.dp,
         defaultHeight = 120.dp,
         viewportWidth = 120f,
         viewportHeight = 120f,
     ).apply {
-        // Person 1 (Celeste Argentina)
-        path(fill = SolidColor(Color(0xFF74ACDF))) {
-            moveTo(40f, 45f)
-            arcToRelative(14f, 14f, 0f, true, true, 0f, -28f)
-            arcToRelative(14f, 14f, 0f, false, true, 0f, 28f)
-            close()
-            moveTo(40f, 52f)
-            curveTo(26f, 52f, 8f, 59f, 8f, 73f)
-            verticalLineToRelative(7f)
-            horizontalLineToRelative(64f)
-            verticalLineToRelative(-7f)
-            curveTo(72f, 59f, 54f, 52f, 40f, 52f)
+        // Gourd Body (Marrón/Madera o Verde mate)
+        path(fill = SolidColor(Color(0xFF8D6E63))) { // Gourd Brown
+            moveTo(60f, 95f)
+            curveTo(40f, 95f, 35f, 75f, 35f, 55f)
+            horizontalLineTo(85f)
+            curveTo(85f, 75f, 80f, 95f, 60f, 95f)
             close()
         }
-        // Person 2 (Sol de Mayo - Gold)
-        path(fill = SolidColor(Color(0xFFF1C40F))) {
-            moveTo(80f, 40f)
-            arcToRelative(12f, 12f, 0f, true, true, 0f, -24f)
-            arcToRelative(12f, 12f, 0f, false, true, 0f, 24f)
-            close()
-            moveTo(80f, 46f)
-            curveTo(70f, 46f, 56f, 51f, 56f, 62f)
-            verticalLineToRelative(6f)
-            horizontalLineToRelative(48f)
-            verticalLineToRelative(-6f)
-            curveTo(104f, 51f, 90f, 46f, 80f, 46f)
+        // Gourd Metal Rim (Gris metal)
+        path(fill = SolidColor(Color(0xFFB0BEC5))) { // Metal Silver
+            moveTo(33f, 50f)
+            curveTo(33f, 47f, 45f, 45f, 60f, 45f)
+            curveTo(75f, 45f, 87f, 47f, 87f, 50f)
+            curveTo(87f, 53f, 75f, 55f, 60f, 55f)
+            curveTo(45f, 55f, 33f, 53f, 33f, 50f)
             close()
         }
-        // Shared Dollar sign in the foreground representing splitting
-        path(fill = SolidColor(Color(0xFF2E7D32))) {
-            moveTo(60f, 65f)
-            curveTo(54.48f, 65f, 50f, 69.48f, 50f, 75f)
-            curveTo(50f, 80.52f, 54.48f, 85f, 60f, 85f)
-            curveTo(65.52f, 85f, 70f, 80.52f, 70f, 75f)
-            curveTo(70f, 69.48f, 65.52f, 65f, 60f, 65f)
+        // Yerba inside (Verde)
+        path(fill = SolidColor(Color(0xFF4CAF50))) { // Yerba Green
+            moveTo(38f, 50f)
+            curveTo(38f, 50f, 50f, 48f, 60f, 50f)
+            curveTo(70f, 52f, 82f, 50f, 82f, 50f)
+            curveTo(82f, 50f, 75f, 53f, 60f, 53f)
+            curveTo(45f, 53f, 38f, 50f, 38f, 50f)
             close()
-            moveTo(61f, 81f)
-            horizontalLineTo(59f)
-            verticalLineTo(79.9f)
-            curveTo(57.65f, 79.75f, 56.4f, 78.9f, 56f, 77.5f)
-            lineTo(57.8f, 76.75f)
-            curveTo(58.05f, 77.55f, 58.75f, 78.1f, 60f, 78.1f)
-            curveTo(61.25f, 78.1f, 61.9f, 77.5f, 61.9f, 76.7f)
-            curveTo(61.9f, 74.5f, 56.2f, 74.9f, 56.2f, 71.3f)
-            curveTo(56.2f, 69.8f, 57.4f, 68.8f, 59f, 68.5f)
-            verticalLineTo(67f)
-            horizontalLineTo(61f)
-            verticalLineTo(68.5f)
-            curveTo(62.25f, 68.7f, 63.3f, 69.4f, 63.7f, 70.5f)
-            lineTo(61.9f, 71.25f)
-            curveTo(61.65f, 70.65f, 61.1f, 70.3f, 60f, 70.3f)
-            curveTo(58.95f, 70.3f, 58.3f, 70.8f, 58.3f, 71.5f)
-            curveTo(58.3f, 73.5f, 64f, 73.1f, 64f, 76.6f)
-            curveTo(64f, 78.2f, 62.75f, 79.4f, 61f, 79.9f)
-            verticalLineTo(81f)
+        }
+        // Bombilla (Metal Straw)
+        path(
+            stroke = SolidColor(Color(0xFFCFD8DC)),
+            strokeLineWidth = 4f,
+            strokeLineCap = StrokeCap.Round,
+        ) {
+            moveTo(60f, 50f)
+            lineTo(78f, 20f)
+        }
+        // Bombilla Spoon Tip/Filter (Metal Gold/Yellow)
+        path(fill = SolidColor(Color(0xFFFFD54F))) {
+            moveTo(58f, 53f)
+            arcToRelative(4f, 4f, 0f, true, true, 4f, -4f)
             close()
+        }
+        // Bombilla Curved Top Mouthpiece
+        path(
+            stroke = SolidColor(Color(0xFFFFD54F)),
+            strokeLineWidth = 4f,
+            strokeLineCap = StrokeCap.Round,
+        ) {
+            moveTo(78f, 20f)
+            lineTo(83f, 18f)
+        }
+        // Warm Steam lines (Gris suave / Blanco)
+        path(
+            stroke = SolidColor(Color(0xFF90A4AE).copy(alpha = 0.5f)),
+            strokeLineWidth = 3f,
+            strokeLineCap = StrokeCap.Round,
+        ) {
+            // Steam line 1
+            moveTo(45f, 35f)
+            quadToRelative(-3f, -5f, 0f, -10f)
+            quadToRelative(3f, -5f, 0f, -10f)
+            // Steam line 2
+            moveTo(55f, 32f)
+            quadToRelative(-3f, -5f, 0f, -10f)
+            quadToRelative(3f, -5f, 0f, -10f)
         }
     }.build()
 
@@ -154,6 +164,7 @@ fun TableListScreen(
     viewModel: TableViewModel,
     onNavigateToLobby: (String) -> Unit,
     onSignOut: () -> Unit,
+    onCreateTableClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -210,7 +221,7 @@ fun TableListScreen(
                     modifier = Modifier.padding(24.dp),
                 ) {
                     Icon(
-                        imageVector = EmptyStateIllustration,
+                        imageVector = MateIllustration,
                         contentDescription = null,
                         modifier = Modifier.size(110.dp),
                         tint = Color.Unspecified,
@@ -225,12 +236,24 @@ fun TableListScreen(
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text =
-                            "Creá una mesa nueva o\n" +
-                                "unite a una existente con el botón (+) de abajo para empezar a dividir tus gastos.",
+                            "Creá una mesa nueva o unite a una existente para " +
+                                "empezar a dividir tus gastos.",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
                         textAlign = TextAlign.Center,
                     )
+                    Spacer(modifier = Modifier.height(24.dp))
+                    ClayButton(
+                        onClick = onCreateTableClick,
+                        modifier = Modifier.fillMaxWidth(0.8f),
+                        cornerRadius = 16.dp,
+                    ) {
+                        Text(
+                            text = "Armar una juntada 🎉",
+                            fontWeight = FontWeight.Bold,
+                            style = MaterialTheme.typography.bodyMedium,
+                        )
+                    }
                 }
             }
         } else {
