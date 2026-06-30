@@ -258,6 +258,7 @@ fun MainHubScreen(
                         viewModel = viewModel,
                         onNavigateToLobby = onNavigateToLobby,
                         onSignOut = onSignOut,
+                        onCreateTableClick = { showBottomSheet = true },
                     )
                 1 ->
                     FriendsScreen(
