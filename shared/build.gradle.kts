@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.androidMultiplatformLibrary)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
+    alias(libs.plugins.kotlinxSerialization)
 }
 
 kotlin {
@@ -24,7 +25,7 @@ kotlin {
         minSdk = libs.versions.android.minSdk.get().toInt()
 
         compilerOptions {
-            jvmTarget = JvmTarget.JVM_11
+            jvmTarget = JvmTarget.JVM_17
         }
         androidResources {
             enable = true
@@ -36,17 +37,27 @@ kotlin {
 
     sourceSets {
         androidMain.dependencies {
+            implementation(project.dependencies.platform("com.google.firebase:firebase-bom:33.1.1"))
             implementation(libs.compose.uiToolingPreview)
+            implementation(libs.play.services.code.scanner)
         }
         commonMain.dependencies {
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)
             implementation(libs.compose.material3)
+            implementation(libs.compose.material.icons)
+            implementation(libs.compose.material.icons.extended)
             implementation(libs.compose.ui)
             implementation(libs.compose.components.resources)
             implementation(libs.compose.uiToolingPreview)
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
+            implementation(libs.firebase.database)
+            implementation(libs.firebase.auth)
+            implementation(libs.firebase.storage)
+            implementation(libs.kotlinx.serialization.json)
+            implementation(libs.jetbrains.navigation.compose)
+            implementation(libs.qrcode.kotlin)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

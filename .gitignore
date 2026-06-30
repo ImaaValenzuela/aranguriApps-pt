@@ -63,3 +63,7 @@ node_modules/
 .vscode/
 *.swp
 *~
+
+# Firebase
+google-services.json
+GoogleService-Info.plist
