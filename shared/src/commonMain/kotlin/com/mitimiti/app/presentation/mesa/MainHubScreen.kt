@@ -51,40 +51,6 @@ import com.mitimiti.app.presentation.stats.StatsScreen
 import com.mitimiti.app.presentation.theme.claymorphic
 import kotlinx.coroutines.delay
 
-internal val CameraIcon: ImageVector =
-    ImageVector.Builder(
-        name = "CameraIcon",
-        defaultWidth = 24.dp,
-        defaultHeight = 24.dp,
-        viewportWidth = 24f,
-        viewportHeight = 24f,
-    ).apply {
-        path(fill = androidx.compose.ui.graphics.SolidColor(Color.Black)) {
-            moveTo(12f, 12f)
-            arcToRelative(3f, 3f, 0f, isMoreThanHalf = true, isPositiveArc = true, 0f, 6f)
-            arcToRelative(3f, 3f, 0f, isMoreThanHalf = false, isPositiveArc = true, 0f, -6f)
-            close()
-            moveTo(9f, 2f)
-            lineTo(7.17f, 4f)
-            lineTo(4f, 4f)
-            arcTo(2f, 2f, 0f, isMoreThanHalf = false, isPositiveArc = false, 2f, 6f)
-            verticalLineTo(18f)
-            arcTo(2f, 2f, 0f, isMoreThanHalf = false, isPositiveArc = false, 4f, 20f)
-            horizontalLineTo(20f)
-            arcTo(2f, 2f, 0f, isMoreThanHalf = false, isPositiveArc = false, 22f, 18f)
-            verticalLineTo(6f)
-            arcTo(2f, 2f, 0f, isMoreThanHalf = false, isPositiveArc = false, 20f, 4f)
-            horizontalLineTo(16.83f)
-            lineTo(15f, 2f)
-            horizontalLineTo(9f)
-            close()
-            moveTo(12f, 17f)
-            arcTo(5f, 5f, 0f, isMoreThanHalf = true, isPositiveArc = false, 12f, 7f)
-            arcTo(5f, 5f, 0f, isMoreThanHalf = false, isPositiveArc = false, 12f, 17f)
-            close()
-        }
-    }.build()
-
 // Bar chart icon for Stats tab (no extended icons dependency needed)
 private val BarChartIcon: ImageVector =
     ImageVector.Builder(

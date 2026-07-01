@@ -26,6 +26,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
@@ -224,7 +225,7 @@ fun JoinTableBottomSheet(
                                 contentColor = Color.Black,
                             ) {
                                 Icon(
-                                    imageVector = CameraIcon,
+                                    imageVector = Icons.Default.CameraAlt,
                                     contentDescription = "Escanear código QR",
                                     tint = Color.Black,
                                 )
