@@ -30,9 +30,8 @@ fun WizardProgressBar(
     currentStep: Int,
     onStepClick: (Int) -> Unit,
     modifier: Modifier = Modifier,
-    // El paso máximo al que se puede navegar (inclusive).
-    // Por defecto = currentStep, lo que permite ir hacia atrás pero no adelante sin completar.
-    maxAllowedStep: Int = currentStep,
+    // Lista de booleanos indicando si cada paso está habilitado
+    stepsEnabled: List<Boolean> = listOf(true, true, true),
 ) {
     val isDark = isSystemInDarkTheme()
     val steps = listOf("Juntada", "Gastos", "Cuenta")
@@ -54,7 +53,7 @@ fun WizardProgressBar(
         steps.forEachIndexed { index, title ->
             val isActive = index == currentStep
             val isCompleted = index < currentStep
-            val isLocked = index > maxAllowedStep
+            val isLocked = index >= stepsEnabled.size || !stepsEnabled[index]
 
             val bubbleBgColor =
                 when {

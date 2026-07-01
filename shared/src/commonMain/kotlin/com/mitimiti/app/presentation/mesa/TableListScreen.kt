@@ -119,45 +119,6 @@ private val MateIllustration: ImageVector =
         }
     }.build()
 
-// Restaurant icon locally defined
-private val RestaurantIcon: ImageVector =
-    ImageVector.Builder(
-        name = "RestaurantIcon",
-        defaultWidth = 24.dp,
-        defaultHeight = 24.dp,
-        viewportWidth = 24f,
-        viewportHeight = 24f,
-    ).apply {
-        path(fill = SolidColor(Color.Black)) {
-            // Fork
-            moveTo(11f, 9f)
-            horizontalLineTo(9f)
-            verticalLineTo(2f)
-            horizontalLineTo(7f)
-            verticalLineTo(9f)
-            horizontalLineTo(5f)
-            verticalLineTo(2f)
-            horizontalLineTo(3f)
-            verticalLineTo(9f)
-            curveTo(3f, 11.12f, 4.66f, 12.84f, 6.75f, 12.97f)
-            verticalLineTo(22f)
-            horizontalLineTo(9.25f)
-            verticalLineTo(12.97f)
-            curveTo(11.34f, 12.84f, 13f, 11.12f, 13f, 9f)
-            verticalLineTo(2f)
-            horizontalLineTo(11f)
-            close()
-            // Knife
-            moveTo(16f, 2f)
-            verticalLineTo(22f)
-            horizontalLineTo(18.5f)
-            verticalLineTo(15f)
-            horizontalLineTo(21f)
-            curveTo(21f, 15f, 21f, 2f, 16f, 2f)
-            close()
-        }
-    }.build()
-
 @Composable
 @Suppress("LongMethod", "FunctionNaming")
 fun TableListScreen(
