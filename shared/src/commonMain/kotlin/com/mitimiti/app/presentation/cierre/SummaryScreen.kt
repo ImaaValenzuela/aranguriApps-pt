@@ -51,6 +51,7 @@ import com.mitimiti.app.domain.model.TableType
 import com.mitimiti.app.presentation.theme.ClayButton
 import com.mitimiti.app.presentation.theme.claymorphic
 import com.mitimiti.app.rememberTextSharer
+import com.mitimiti.app.utils.format
 
 @Composable
 @Suppress("FunctionNaming", "LongMethod")

@@ -39,6 +39,7 @@ import androidx.compose.ui.unit.sp
 import com.mitimiti.app.domain.model.Table
 import com.mitimiti.app.domain.model.TableType
 import com.mitimiti.app.presentation.theme.claymorphic
+import com.mitimiti.app.utils.format
 
 // Restaurant icon locally defined
 private val RestaurantIcon: ImageVector =
@@ -552,16 +553,4 @@ private fun calculatePercentage(
 ): Int {
     if (total == 0) return 0
     return ((count.toDouble() / total) * 100).toInt()
-}
-
-internal fun Double.format(digits: Int): String {
-    val raw = this.toString()
-    val parts = raw.split(".")
-    if (parts.size < 2) return raw
-    val decimals = parts[1]
-    return if (decimals.length >= digits) {
-        parts[0] + "." + decimals.substring(0, digits)
-    } else {
-        parts[0] + "." + decimals + "0".repeat(digits - decimals.length)
-    }
 }
