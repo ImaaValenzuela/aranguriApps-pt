@@ -47,6 +47,11 @@ kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serializa
 jetbrains-navigation-compose = { module = "org.jetbrains.androidx.navigation:navigation-compose", version.ref = "jetbrains-navigation" }
 qrcode-kotlin = { module = "io.github.g0dkar:qrcode-kotlin", version.ref = "qrcode" }
 play-services-code-scanner = { module = "com.google.android.gms:play-services-code-scanner", version = "16.1.0" }
+mlkit-text-recognition = { module = "com.google.mlkit:text-recognition", version = "16.0.0" }
+androidx-camera-core = { module = "androidx.camera:camera-core", version = "1.4.1" }
+androidx-camera-camera2 = { module = "androidx.camera:camera-camera2", version = "1.4.1" }
+androidx-camera-lifecycle = { module = "androidx.camera:camera-lifecycle", version = "1.4.1" }
+androidx-camera-view = { module = "androidx.camera:camera-view", version = "1.4.1" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

@@ -23,6 +23,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
@@ -46,6 +47,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -56,9 +58,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import com.mitimiti.app.domain.model.TableType
 import com.mitimiti.app.presentation.theme.ClayButton
 import com.mitimiti.app.presentation.theme.claymorphic
+import com.mitimiti.app.rememberImagePicker
+import com.mitimiti.app.rememberTextRecognizer
+import com.mitimiti.app.rememberTicketScanner
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
@@ -85,6 +92,65 @@ fun ExpenseScreen(
 
     var tipInput by remember { mutableStateOf("10") }
     var extraInput by remember { mutableStateOf("0") }
+
+    var isProcessingImage by remember { mutableStateOf(false) }
+    var showTicketDialog by remember { mutableStateOf(false) }
+    var parsedItems by remember { mutableStateOf<List<ParsedExpenseItem>>(emptyList()) }
+    val parsedItemsTextMap = remember { mutableStateMapOf<String, String>() }
+
+    val ticketScanner =
+        rememberTicketScanner { recognizedText ->
+            isProcessingImage = false
+            if (recognizedText != null) {
+                val parsed = TicketParser.parse(recognizedText)
+                if (parsed.isNotEmpty()) {
+                    parsedItemsTextMap.clear()
+                    parsed.forEach { item ->
+                        parsedItemsTextMap[item.id] = item.cost.toString()
+                    }
+                    parsedItems = parsed
+                    showTicketDialog = true
+                } else {
+                    scope.launch {
+                        snackbarHostState.showSnackbar(
+                            "No se pudieron detectar productos en el ticket. Intentá enfocar mejor.",
+                        )
+                    }
+                }
+            }
+        }
+
+    val textRecognizer =
+        rememberTextRecognizer { recognizedText ->
+            isProcessingImage = false
+            if (recognizedText != null) {
+                val parsed = TicketParser.parse(recognizedText)
+                if (parsed.isNotEmpty()) {
+                    parsedItemsTextMap.clear()
+                    parsed.forEach { item ->
+                        parsedItemsTextMap[item.id] = item.cost.toString()
+                    }
+                    parsedItems = parsed
+                    showTicketDialog = true
+                } else {
+                    scope.launch {
+                        snackbarHostState.showSnackbar(
+                            "No se pudieron detectar productos en el ticket. Intentá con otra foto.",
+                        )
+                    }
+                }
+            } else {
+                scope.launch {
+                    snackbarHostState.showSnackbar("Error al procesar la imagen.")
+                }
+            }
+        }
+
+    val imagePicker =
+        rememberImagePicker { bytes ->
+            isProcessingImage = true
+            textRecognizer(bytes)
+        }
 
     LaunchedEffect(tableId) {
         viewModel.loadTable(tableId)
@@ -162,12 +228,15 @@ fun ExpenseScreen(
                         }
                     }
                 } else {
-                    // Locked OCR Receipt Scanner Option
+                    // Unlocked OCR Receipt Scanner Option
                     item {
                         Box(
                             modifier =
                                 Modifier
                                     .fillMaxWidth()
+                                    .clickable(enabled = !isProcessingImage) {
+                                        ticketScanner()
+                                    }
                                     .claymorphic(
                                         backgroundColor =
                                             if (isDark) {
@@ -190,40 +259,54 @@ fun ExpenseScreen(
                                     modifier = Modifier.weight(1f),
                                     verticalAlignment = Alignment.CenterVertically,
                                 ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Lock,
-                                        contentDescription = "Bloqueado",
-                                        modifier = Modifier.size(24.dp),
-                                        tint = MaterialTheme.colorScheme.primary,
-                                    )
+                                    if (isProcessingImage) {
+                                        androidx.compose.material3.CircularProgressIndicator(
+                                            modifier = Modifier.size(24.dp),
+                                            strokeWidth = 2.dp,
+                                        )
+                                    } else {
+                                        Icon(
+                                            imageVector = Icons.Default.CameraAlt,
+                                            contentDescription = "Escanear",
+                                            modifier = Modifier.size(24.dp),
+                                            tint = MaterialTheme.colorScheme.primary,
+                                        )
+                                    }
                                     Spacer(modifier = Modifier.width(10.dp))
                                     Column {
                                         Text(
-                                            text = "Escanear Ticket",
+                                            text =
+                                                if (isProcessingImage) {
+                                                    "Procesando Ticket..."
+                                                } else {
+                                                    "Escanear Ticket"
+                                                },
                                             fontWeight = FontWeight.Bold,
                                             style = MaterialTheme.typography.bodyMedium,
                                         )
                                         Text(
-                                            text = "Carga automática con foto (Próximamente)",
+                                            text =
+                                                if (isProcessingImage) {
+                                                    "Analizando texto con ML Kit..."
+                                                } else {
+                                                    "Carga automática leyendo una foto"
+                                                },
                                             style = MaterialTheme.typography.bodySmall,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                                            color =
+                                                MaterialTheme.colorScheme
+                                                    .onSurfaceVariant.copy(alpha = 0.7f),
                                         )
                                     }
                                 }
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Icon(
-                                        imageVector = Icons.Default.Lock,
-                                        contentDescription = "Bloqueado",
-                                        modifier = Modifier.size(12.dp),
-                                        tint = MaterialTheme.colorScheme.outline,
-                                    )
-                                    Spacer(modifier = Modifier.width(4.dp))
-                                    Text(
-                                        text = "Bloqueado",
-                                        style = MaterialTheme.typography.labelSmall,
-                                        fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.outline,
-                                    )
+                                if (!isProcessingImage) {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Icon(
+                                            imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(16.dp),
+                                            tint = MaterialTheme.colorScheme.primary,
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -748,4 +831,322 @@ fun ExpenseScreen(
             }
         }
     } // end Scaffold
+
+    if (showTicketDialog) {
+        Dialog(
+            onDismissRequest = { showTicketDialog = false },
+            properties = DialogProperties(usePlatformDefaultWidth = false),
+        ) {
+            Box(
+                modifier =
+                    Modifier
+                        .fillMaxSize()
+                        .padding(16.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                Box(
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .claymorphic(
+                                backgroundColor = if (isDark) MaterialTheme.colorScheme.surface else Color.White,
+                                cornerRadius = 24.dp,
+                                elevation = 8.dp,
+                                isDark = isDark,
+                            )
+                            .padding(16.dp),
+                ) {
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        // Title
+                        Text(
+                            text = "Ticket Escaneado",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Black,
+                            color = MaterialTheme.colorScheme.primary,
+                        )
+                        Text(
+                            text = "Revisá los nombres y precios, y seleccioná los que quieras cargar.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+
+                        Spacer(modifier = Modifier.height(4.dp))
+
+                        // Dialog Payer & Sharers selectors
+                        var dialogPayerId by remember { mutableStateOf(selectedPayerId) }
+                        val dialogFriendIds =
+                            remember { mutableStateListOf<String>().apply { addAll(selectedFriendIds) } }
+
+                        // Who paid
+                        Text(
+                            text = "Quién pagó el ticket:",
+                            style = MaterialTheme.typography.bodySmall,
+                            fontWeight = FontWeight.Bold,
+                        )
+                        FlowRow(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(6.dp),
+                            verticalArrangement = Arrangement.spacedBy(4.dp),
+                        ) {
+                            state.friends.forEach { friend ->
+                                val isPayer = dialogPayerId == friend.id
+                                Box(
+                                    modifier =
+                                        Modifier
+                                            .clickable { dialogPayerId = friend.id }
+                                            .claymorphic(
+                                                backgroundColor =
+                                                    if (isPayer) {
+                                                        MaterialTheme.colorScheme.primaryContainer
+                                                    } else if (isDark) {
+                                                        MaterialTheme.colorScheme.surface
+                                                    } else {
+                                                        Color.White
+                                                    },
+                                                cornerRadius = 12.dp,
+                                                elevation = if (isPayer) 3.dp else 1.dp,
+                                                isDark = isDark,
+                                            )
+                                            .padding(horizontal = 8.dp, vertical = 4.dp),
+                                ) {
+                                    Text(
+                                        text = friend.name,
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color =
+                                            if (isPayer) {
+                                                MaterialTheme.colorScheme.onPrimaryContainer
+                                            } else {
+                                                MaterialTheme.colorScheme.onSurface
+                                            },
+                                    )
+                                }
+                            }
+                        }
+
+                        // Who shared
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Text(
+                                text = "Quiénes consumieron:",
+                                style = MaterialTheme.typography.bodySmall,
+                                fontWeight = FontWeight.Bold,
+                            )
+                            TextButton(
+                                onClick = {
+                                    if (dialogFriendIds.size == state.friends.size) {
+                                        dialogFriendIds.clear()
+                                    } else {
+                                        dialogFriendIds.clear()
+                                        dialogFriendIds.addAll(state.friends.map { it.id })
+                                    }
+                                },
+                            ) {
+                                Text(
+                                    text = if (dialogFriendIds.size == state.friends.size) "Ninguno" else "Todos",
+                                    style = MaterialTheme.typography.labelSmall,
+                                )
+                            }
+                        }
+                        FlowRow(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(6.dp),
+                            verticalArrangement = Arrangement.spacedBy(4.dp),
+                        ) {
+                            state.friends.forEach { friend ->
+                                val isChecked = dialogFriendIds.contains(friend.id)
+                                Box(
+                                    modifier =
+                                        Modifier
+                                            .clickable {
+                                                if (isChecked) {
+                                                    dialogFriendIds.remove(
+                                                        friend.id,
+                                                    )
+                                                } else {
+                                                    dialogFriendIds.add(friend.id)
+                                                }
+                                            }
+                                            .claymorphic(
+                                                backgroundColor =
+                                                    if (isChecked) {
+                                                        MaterialTheme.colorScheme.primaryContainer
+                                                    } else if (isDark) {
+                                                        MaterialTheme.colorScheme.surface
+                                                    } else {
+                                                        Color.White
+                                                    },
+                                                cornerRadius = 12.dp,
+                                                elevation = if (isChecked) 3.dp else 1.dp,
+                                                isDark = isDark,
+                                            )
+                                            .padding(horizontal = 8.dp, vertical = 4.dp),
+                                ) {
+                                    Text(
+                                        text = friend.name,
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color =
+                                            if (isChecked) {
+                                                MaterialTheme.colorScheme.onPrimaryContainer
+                                            } else {
+                                                MaterialTheme.colorScheme.onSurface
+                                            },
+                                    )
+                                }
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(4.dp))
+
+                        // Items list
+                        Box(
+                            modifier =
+                                Modifier
+                                    .weight(1f)
+                                    .fillMaxWidth(),
+                        ) {
+                            LazyColumn(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalArrangement = Arrangement.spacedBy(8.dp),
+                            ) {
+                                items(parsedItems) { item ->
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                    ) {
+                                        Checkbox(
+                                            checked = item.selected,
+                                            onCheckedChange = { checked ->
+                                                parsedItems =
+                                                    parsedItems.map {
+                                                        if (it.id == item.id) it.copy(selected = checked) else it
+                                                    }
+                                            },
+                                        )
+
+                                        // Description input
+                                        OutlinedTextField(
+                                            value = item.name,
+                                            onValueChange = { newName ->
+                                                parsedItems =
+                                                    parsedItems.map {
+                                                        if (it.id == item.id) it.copy(name = newName) else it
+                                                    }
+                                            },
+                                            modifier = Modifier.weight(1.5f),
+                                            singleLine = true,
+                                            shape = RoundedCornerShape(12.dp),
+                                        )
+
+                                        // Cost input
+                                        val costStr = parsedItemsTextMap[item.id] ?: item.cost.toString()
+                                        OutlinedTextField(
+                                            value = costStr,
+                                            onValueChange = { newCostStr ->
+                                                parsedItemsTextMap[item.id] = newCostStr
+                                                val parsedCost = newCostStr.toDoubleOrNull()
+                                                if (parsedCost != null) {
+                                                    parsedItems =
+                                                        parsedItems.map {
+                                                            if (it.id == item.id) it.copy(cost = parsedCost) else it
+                                                        }
+                                                }
+                                            },
+                                            modifier = Modifier.weight(1f),
+                                            singleLine = true,
+                                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                            shape = RoundedCornerShape(12.dp),
+                                        )
+
+                                        IconButton(
+                                            onClick = {
+                                                parsedItems = parsedItems.filter { it.id != item.id }
+                                                parsedItemsTextMap.remove(item.id)
+                                            },
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.Delete,
+                                                contentDescription = "Eliminar",
+                                                tint = MaterialTheme.colorScheme.error,
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        // Summary & Actions
+                        val selectedCount = parsedItems.count { it.selected }
+                        val totalCost = parsedItems.filter { it.selected }.sumOf { it.cost }
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Text(
+                                text = "$selectedCount seleccionados",
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.Bold,
+                            )
+                            Text(
+                                text = "Total: $$totalCost",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Black,
+                                color = MaterialTheme.colorScheme.primary,
+                            )
+                        }
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.End,
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            TextButton(
+                                onClick = { showTicketDialog = false },
+                            ) {
+                                Text("Cancelar", color = MaterialTheme.colorScheme.error)
+                            }
+                            Spacer(modifier = Modifier.width(8.dp))
+                            ClayButton(
+                                onClick = {
+                                    val itemsToAdd = parsedItems.filter { it.selected }
+                                    if (itemsToAdd.isNotEmpty()) {
+                                        itemsToAdd.forEach { item ->
+                                            viewModel.addExpenseItem(
+                                                name = item.name,
+                                                cost = item.cost,
+                                                sharedByFriendIds = dialogFriendIds.toList(),
+                                                paidByFriendId = dialogPayerId,
+                                            )
+                                        }
+                                        val count = itemsToAdd.size
+                                        scope.launch {
+                                            snackbarHostState.showSnackbar(
+                                                "✓ Se cargaron $count gastos del ticket",
+                                            )
+                                        }
+                                    }
+                                    showTicketDialog = false
+                                },
+                                enabled =
+                                    selectedCount > 0 &&
+                                        dialogPayerId.isNotEmpty() &&
+                                        dialogFriendIds.isNotEmpty(),
+                                cornerRadius = 16.dp,
+                            ) {
+                                Text("Cargar Gastos", fontWeight = FontWeight.Bold)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
