@@ -111,6 +111,16 @@ class TableViewModel(
         }
     }
 
+    fun parseQRCodeResult(raw: String): String {
+        val result = raw.trim()
+        return when {
+            result.contains("tableId=") -> result.substringAfter("tableId=").substringBefore("&")
+            result.contains("/table_lobby/") -> result.substringAfter("/table_lobby/").substringBefore("/")
+            result.contains("/table/") -> result.substringAfter("/table/").substringBefore("/")
+            else -> result
+        }
+    }
+
     fun clearCreateForm() {
         _createFormState.value =
             CreateTableFormState(
