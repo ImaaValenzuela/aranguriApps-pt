@@ -27,6 +27,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -58,17 +59,17 @@ fun ActiveTableHubScreen(
 
     // Reglas de validación:
     //   Paso 0 (Lobby):    siempre accesible
-    //   Paso 1 (Gastos):   al menos 2 amigos en la juntada
+    //   Paso 1 (Gastos):   al menos 2 amigos en la juntada (1 amigo sumado + host)
     //   Paso 2 (Cuenta):   al menos 1 gasto cargado
     val hasFriends = tableState.friends.size >= 1
     val hasExpenses = expenseState.expenses.isNotEmpty()
 
-    val maxAllowedStep =
-        when {
-            hasExpenses -> 2
-            hasFriends -> 1
-            else -> 0
-        }
+    val stepsEnabled =
+        listOf(
+            true,
+            hasFriends,
+            hasFriends && hasExpenses,
+        )
 
     Column(
         modifier =
@@ -110,10 +111,10 @@ fun ActiveTableHubScreen(
         // Wizard Progress Tracker con validación de pasos
         WizardProgressBar(
             currentStep = selectedStep,
-            maxAllowedStep = maxAllowedStep,
+            stepsEnabled = stepsEnabled,
             onStepClick = { step ->
-                // Solo permite navegar si el paso es alcanzable
-                if (step <= maxAllowedStep) {
+                // Solo permite navegar si el paso está habilitado
+                if (step < stepsEnabled.size && stepsEnabled[step]) {
                     selectedStep = step
                 }
             },
@@ -137,41 +138,43 @@ fun ActiveTableHubScreen(
                 },
                 label = "WizardStepTransition",
             ) { step ->
-                when (step) {
-                    0 ->
-                        TableScreen(
-                            tableId = tableId,
-                            viewModel = tableViewModel,
-                            onNavigateToExpenses = {
-                                if (maxAllowedStep >= 1) selectedStep = 1
-                            },
-                            onNavigateToSummary = {
-                                if (maxAllowedStep >= 2) selectedStep = 2
-                            },
-                            onBack = onBack,
-                            modifier = Modifier.fillMaxSize(),
-                        )
-                    1 ->
-                        ExpenseScreen(
-                            tableId = tableId,
-                            viewModel = expenseViewModel,
-                            onNavigateToLobby = { selectedStep = 0 },
-                            onNavigateToSummary = {
-                                if (maxAllowedStep >= 2) selectedStep = 2
-                            },
-                            onBack = onBack,
-                            modifier = Modifier.fillMaxSize(),
-                        )
-                    2 ->
-                        SummaryScreen(
-                            tableId = tableId,
-                            viewModel = summaryViewModel,
-                            onNavigateToLobby = { selectedStep = 0 },
-                            onNavigateToExpenses = { selectedStep = 1 },
-                            onRestart = onBack,
-                            onBack = onBack,
-                            modifier = Modifier.fillMaxSize(),
-                        )
+                key(step) {
+                    when (step) {
+                        0 ->
+                            TableScreen(
+                                tableId = tableId,
+                                viewModel = tableViewModel,
+                                onNavigateToExpenses = {
+                                    if (stepsEnabled[1]) selectedStep = 1
+                                },
+                                onNavigateToSummary = {
+                                    if (stepsEnabled[2]) selectedStep = 2
+                                },
+                                onBack = onBack,
+                                modifier = Modifier.fillMaxSize(),
+                            )
+                        1 ->
+                            ExpenseScreen(
+                                tableId = tableId,
+                                viewModel = expenseViewModel,
+                                onNavigateToLobby = { selectedStep = 0 },
+                                onNavigateToSummary = {
+                                    if (stepsEnabled[2]) selectedStep = 2
+                                },
+                                onBack = onBack,
+                                modifier = Modifier.fillMaxSize(),
+                            )
+                        2 ->
+                            SummaryScreen(
+                                tableId = tableId,
+                                viewModel = summaryViewModel,
+                                onNavigateToLobby = { selectedStep = 0 },
+                                onNavigateToExpenses = { selectedStep = 1 },
+                                onRestart = onBack,
+                                onBack = onBack,
+                                modifier = Modifier.fillMaxSize(),
+                            )
+                    }
                 }
             }
         }
