@@ -61,13 +61,7 @@ fun JoinTableBottomSheet(
 
     val qrScanner =
         rememberQRScanner { result ->
-            val parsedCode =
-                when {
-                    result.contains("tableId=") -> result.substringAfter("tableId=").substringBefore("&")
-                    result.contains("/table_lobby/") -> result.substringAfter("/table_lobby/").substringBefore("/")
-                    result.contains("/table/") -> result.substringAfter("/table/").substringBefore("/")
-                    else -> result.trim()
-                }
+            val parsedCode = viewModel.parseQRCodeResult(result)
             viewModel.updateJoinForm(joinCodeInput = parsedCode)
         }
 
