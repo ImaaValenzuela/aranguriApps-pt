@@ -38,6 +38,20 @@ data class TableUiState(
     val isRefreshing: Boolean = false,
 )
 
+data class CreateTableFormState(
+    val tableNameInput: String = "",
+    val creatorNickname: String = "",
+    val selectedType: TableType = TableType.RESTAURANT,
+    val tipPercentageInput: String = "10",
+    val fixedCostInput: String = "0",
+    val cubiertoInput: String = "0",
+)
+
+data class JoinTableFormState(
+    val joinCodeInput: String = "",
+    val joinNicknameInput: String = "",
+)
+
 class TableViewModel(
     private val tableRepository: TableRepository,
     private val authRepository: AuthRepository,
@@ -45,6 +59,71 @@ class TableViewModel(
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(TableUiState())
     val uiState: StateFlow<TableUiState> = _uiState.asStateFlow()
+
+    private val _createFormState = MutableStateFlow(CreateTableFormState())
+    val createFormState: StateFlow<CreateTableFormState> = _createFormState.asStateFlow()
+
+    private val _joinFormState = MutableStateFlow(JoinTableFormState())
+    val joinFormState: StateFlow<JoinTableFormState> = _joinFormState.asStateFlow()
+
+    init {
+        viewModelScope.launch {
+            AppSettings.username.collect { username ->
+                if (_createFormState.value.creatorNickname.isEmpty()) {
+                    _createFormState.update { it.copy(creatorNickname = username) }
+                }
+                if (_joinFormState.value.joinNicknameInput.isEmpty()) {
+                    _joinFormState.update { it.copy(joinNicknameInput = username) }
+                }
+            }
+        }
+    }
+
+    fun updateCreateForm(
+        tableNameInput: String = _createFormState.value.tableNameInput,
+        creatorNickname: String = _createFormState.value.creatorNickname,
+        selectedType: TableType = _createFormState.value.selectedType,
+        tipPercentageInput: String = _createFormState.value.tipPercentageInput,
+        fixedCostInput: String = _createFormState.value.fixedCostInput,
+        cubiertoInput: String = _createFormState.value.cubiertoInput,
+    ) {
+        _createFormState.update {
+            it.copy(
+                tableNameInput = tableNameInput,
+                creatorNickname = creatorNickname,
+                selectedType = selectedType,
+                tipPercentageInput = tipPercentageInput,
+                fixedCostInput = fixedCostInput,
+                cubiertoInput = cubiertoInput,
+            )
+        }
+    }
+
+    fun updateJoinForm(
+        joinCodeInput: String = _joinFormState.value.joinCodeInput,
+        joinNicknameInput: String = _joinFormState.value.joinNicknameInput,
+    ) {
+        _joinFormState.update {
+            it.copy(
+                joinCodeInput = joinCodeInput,
+                joinNicknameInput = joinNicknameInput,
+            )
+        }
+    }
+
+    fun clearCreateForm() {
+        _createFormState.value =
+            CreateTableFormState(
+                creatorNickname = AppSettings.username.value,
+            )
+    }
+
+    fun clearJoinForm() {
+        _joinFormState.value =
+            JoinTableFormState(
+                joinNicknameInput = AppSettings.username.value,
+            )
+    }
 
     fun refreshTable(tableId: String) {
         if (tableId.isEmpty()) return
