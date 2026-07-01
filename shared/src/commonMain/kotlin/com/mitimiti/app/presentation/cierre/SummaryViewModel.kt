@@ -7,6 +7,7 @@ import com.mitimiti.app.domain.model.TableType
 import com.mitimiti.app.domain.repository.TableRepository
 import com.mitimiti.app.domain.usecase.CalculateSplitExpensesUseCase
 import com.mitimiti.app.domain.usecase.TableBillSummary
+import com.mitimiti.app.utils.format
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -187,17 +188,5 @@ class SummaryViewModel(
     override fun onCleared() {
         observeJob?.cancel()
         super.onCleared()
-    }
-}
-
-internal fun Double.format(digits: Int): String {
-    val raw = this.toString()
-    val parts = raw.split(".")
-    if (parts.size < 2) return "$raw.00"
-    val decimals = parts[1]
-    return if (decimals.length >= digits) {
-        parts[0] + "." + decimals.substring(0, digits)
-    } else {
-        parts[0] + "." + decimals + "0".repeat(digits - decimals.length)
     }
 }
